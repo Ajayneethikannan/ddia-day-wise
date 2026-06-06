@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 1 — DDIA Daily Lesson</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    padding: 24px 16px 64px;
+  }
+
+  .container { max-width: 800px; margin: 0 auto; }
+
+  /* ── Header ── */
+  .site-label {
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #8b949e;
+    margin-bottom: 6px;
+  }
+  h1.main-title {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    color: #58a6ff;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .subtitle {
+    color: #8b949e;
+    font-size: 1rem;
+    margin-top: 6px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Progress bar ── */
+  .progress-wrap {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #8b949e;
+    margin-bottom: 8px;
+  }
+  .progress-bar-track {
+    background: #21262d;
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #58a6ff, #3fb950);
+    border-radius: 4px;
+    width: 0.92%;
+    transition: width 1s ease;
+  }
+
+  /* ── Navigation ── */
+  .nav-links {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: #58a6ff;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 14px;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    background: #161b22;
+    transition: background .2s, border-color .2s;
+  }
+  .nav-links a:hover { background: #21262d; border-color: #58a6ff; }
+  .nav-links a.disabled { color: #484f58; pointer-events: none; border-color: #21262d; }
+
+  /* ── Cards / Sections ── */
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.4);
+  }
+  h2 {
+    font-size: 1.25rem;
+    color: #58a6ff;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #21262d;
+  }
+  h3 {
+    font-size: 1.05rem;
+    color: #e6edf3;
+    margin: 20px 0 8px;
+  }
+  p { margin-bottom: 14px; }
+  p:last-child { margin-bottom: 0; }
+  ul, ol { padding-left: 22px; margin-bottom: 14px; }
+  li { margin-bottom: 6px; }
+  strong { color: #e6edf3; }
+
+  /* ── Code blocks ── */
+  .code-block {
+    background: #0d1117;
+    border-left: 3px solid #58a6ff;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 13.5px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 16px 0;
+    color: #c9d1d9;
+  }
+
+  /* ── Key Insight box ── */
+  .insight {
+    background: #0d2137;
+    border: 1px solid #1f4068;
+    border-left: 4px solid #58a6ff;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 18px 0;
+  }
+  .insight-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #58a6ff;
+    margin-bottom: 6px;
+  }
+
+  /* ── Connection box ── */
+  .connection {
+    background: #0c1f14;
+    border: 1px solid #1a3f24;
+    border-left: 4px solid #3fb950;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 18px 0;
+  }
+  .connection-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #3fb950;
+    margin-bottom: 6px;
+  }
+
+  /* ── Collapsible think boxes ── */
+  details.think {
+    background: #1a1322;
+    border: 1px solid #3d2f5e;
+    border-left: 4px solid #a371f7;
+    border-radius: 6px;
+    margin: 18px 0;
+    overflow: hidden;
+  }
+  details.think summary {
+    padding: 14px 18px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #a371f7;
+    list-style: none;
+    user-select: none;
+    transition: background .15s;
+  }
+  details.think summary::-webkit-details-marker { display: none; }
+  details.think summary:hover { background: #21182e; }
+  details.think[open] summary { border-bottom: 1px solid #3d2f5e; }
+  details.think .think-body {
+    padding: 16px 18px;
+    color: #c9d1d9;
+  }
+
+  /* ── Quiz cards ── */
+  .quiz-card {
+    background: #111a22;
+    border: 1px solid #1f3a54;
+    border-left: 4px solid #f0883e;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 18px 0;
+  }
+  .quiz-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #f0883e;
+    margin-bottom: 8px;
+  }
+  .quiz-question { font-weight: 600; margin-bottom: 12px; }
+  .reveal-btn {
+    background: #f0883e22;
+    border: 1px solid #f0883e;
+    color: #f0883e;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background .2s;
+  }
+  .reveal-btn:hover { background: #f0883e44; }
+  .quiz-answer {
+    display: none;
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: #0d1117;
+    border-radius: 6px;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+  }
+
+  /* ── Takeaways ── */
+  .takeaways li {
+    padding: 8px 0;
+    border-bottom: 1px solid #21262d;
+  }
+  .takeaways li:last-child { border-bottom: none; }
+  .takeaways li::marker { color: #3fb950; }
+
+  /* ── Tomorrow preview ── */
+  .tomorrow {
+    background: linear-gradient(135deg, #0d2137 0%, #0c1f14 100%);
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 24px 28px;
+    text-align: center;
+    margin-top: 32px;
+  }
+  .tomorrow h2 { border-bottom: none; margin-bottom: 10px; }
+  .tomorrow p { color: #8b949e; margin: 0; }
+  .tomorrow strong { color: #3fb950; }
+
+  /* ── Footer nav repeat ── */
+  .footer-nav { margin-top: 32px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .card { padding: 18px 16px; }
+    .nav-links { flex-direction: column; }
+    .nav-links a { text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="site-label">📚 DDIA Daily Lesson</div>
+  <h1 class="main-title">Day 1 of 109 — Chapter 1: What is DDIA?</h1>
+  <p class="subtitle">The Three Concerns of Every Data System — Reliability, Scalability, Maintainability</p>
+
+  <!-- Progress bar -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Progress</span>
+      <span>1 / 109 (0.9%)</span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav-links">
+    <a class="disabled" href="#">← Previous Lesson</a>
+    <a href="day-02.html">Next Lesson →</a>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 1 — Opening Hook
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <h2>🌩️ Opening Hook: The $150 Million Outage</h2>
+    <p>On August 31, 2019, a single software bug in a data pipeline at an e-commerce company caused a cascading failure that took down checkout for 45 minutes during a peak shopping period. The cost? Over $150 million in lost sales. The culprit wasn't a hacker, a server fire, or even a power outage. It was bad software that failed to handle a perfectly normal situation: a slight increase in traffic.</p>
+    <p>Here's the uncomfortable truth: <strong>almost every major outage in the modern era is not caused by hardware failing, but by data systems failing.</strong> Twitter going down. Facebook losing 6 hours. AWS taking out Netflix. These aren't hardware problems — they're architecture problems. They're problems that a book called <em>Designing Data-Intensive Applications</em> was written to help you solve.</p>
+    <p>So what exactly is a "data-intensive" application, and why do they fail in such spectacular ways?</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 2 — What is DDIA?
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <h2>📖 What is DDIA and Why Does It Exist?</h2>
+    <p><em>Designing Data-Intensive Applications</em> by Martin Kleppmann (published 2017, still the gold standard) is not a book about databases. It's a book about <strong>thinking clearly about data systems</strong>. The distinction matters enormously.</p>
+    <p>Kleppmann draws a sharp line between two types of applications:</p>
+    <h3>Compute-Intensive Applications</h3>
+    <p>These are bottlenecked by <strong>CPU power</strong>. Video encoding, machine learning training, scientific simulations — the limiting factor is raw computational throughput. Throw more processors at it and it gets faster.</p>
+    <h3>Data-Intensive Applications</h3>
+    <p>These are bottlenecked by <strong>data</strong> — its volume, complexity, and the speed at which it changes. The problem is rarely CPU speed. The problems are: How do you store terabytes reliably? How do you query it quickly? How do you ensure that two users updating the same record simultaneously don't corrupt each other's changes? How do you keep serving reads when a server dies at 3 AM?</p>
+    <div class="insight">
+      <div class="insight-label">💡 Key Insight</div>
+      <p>Most applications you'll build professionally — web apps, mobile backends, analytics pipelines, microservices — are data-intensive, not compute-intensive. DDIA teaches you to think like an architect who understands the <em>fundamental guarantees</em> of the tools they use, rather than someone who blindly reaches for the latest database buzzword.</p>
+    </div>
+    <p>The book covers the internals of databases, messaging systems, batch and stream processing, and distributed systems — not to make you implement them from scratch, but so you understand their <em>failure modes</em>, <em>trade-offs</em>, and <em>guarantees</em> deeply enough to make sound architectural decisions.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 3 — The Three Concerns
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <h2>🔺 The Three Concerns: The Heart of Chapter 1</h2>
+    <p>Kleppmann opens with a deceptively simple claim: when designing data systems, there are three concerns that come up again and again, in every project, at every scale. They are:</p>
+    <ol>
+      <li><strong>Reliability</strong> — The system should work correctly even when things go wrong.</li>
+      <li><strong>Scalability</strong> — As the system grows, there should be reasonable ways to deal with that growth.</li>
+      <li><strong>Maintainability</strong> — Many different people should be able to work on the system productively.</li>
+    </ol>
+    <p>These three sound obvious. They're not. Most engineering disasters can be traced back to an architect who prioritized one at the expense of the others, or who failed to understand what "reliability" actually means in a distributed system. Let's break each one down.</p>
+
+    <!-- ── RELIABILITY ── -->
+    <h3>1. Reliability</h3>
+    <p>Reliability means the system does what it's supposed to do — correctly, consistently, and at the level of performance the user expects — <em>even when things go wrong</em>. That last clause is the hard part.</p>
+    <p>The things that can go wrong are called <strong>faults</strong>. A system that anticipates faults and can cope with them is called <strong>fault-tolerant</strong> or <strong>resilient</strong>.</p>
+    <div class="insight">
+      <div class="insight-label">💡 Key Insight</div>
+      <p>Kleppmann makes a crucial distinction: <strong>fault ≠ failure</strong>. A fault is when one component of the system deviates from its spec. A failure is when the whole system stops providing the required service. Fault tolerance means building systems where individual faults don't escalate into full failures. Netflix's famous Chaos Monkey — software that randomly kills servers in production — embodies this philosophy.</p>
+    </div>
+    <p>Faults come in three flavors: <strong>hardware faults</strong> (disk crashes, RAM corruption, power outages), <strong>software errors</strong> (bugs, cascading failures, runaway processes), and <strong>human errors</strong> (misconfiguration, wrong deployments — the most common cause of outages by far).</p>
+
+    <!-- ── SCALABILITY ── -->
+    <h3>2. Scalability</h3>
+    <p>Scalability isn't about being big. It's about having a <em>plan</em> for when you get bigger. The question Kleppmann asks is deceptively precise: <strong>"If the system grows in a particular way, what are our options for coping with that growth?"</strong></p>
+    <p>Notice he says "grows in a particular way" — not just "grows." This matters because different growth patterns demand different solutions. A system can be:</p>
+    <ul>
+      <li><strong>Write-heavy</strong> (a sensor network writing millions of events/second)</li>
+      <li><strong>Read-heavy</strong> (a news website serving millions of readers)</li>
+      <li><strong>Compute-heavy</strong> (a recommendation engine)</li>
+      <li><strong>All of the above simultaneously</strong> (Twitter)</li>
+    </ul>
+    <p>To reason about scalability, you need two concepts: <strong>load parameters</strong> (the numbers that describe your current load — requests per second, ratio of reads to writes, active users) and <strong>performance metrics</strong> (how performance changes as load grows). We'll explore both deeply in Day 4.</p>
+
+    <!-- ── MAINTAINABILITY ── -->
+    <h3>3. Maintainability</h3>
+    <p>Here's a sobering fact: the majority of the cost of software is not in its initial development — it's in <em>ongoing maintenance</em>. Fixing bugs, adapting to new requirements, repaying technical debt, keeping the lights on. Kleppmann breaks maintainability into three sub-concerns:</p>
+    <ul>
+      <li><strong>Operability:</strong> Making it easy for operations teams to keep the system running smoothly. Good observability, clear monitoring, smooth deployment.</li>
+      <li><strong>Simplicity:</strong> Making it easy for new engineers to understand the system. Complexity is the silent killer — it hides bugs, slows teams, and makes change dangerous.</li>
+      <li><strong>Evolvability:</strong> Making it easy to change the system in the future as requirements evolve. Also called <em>extensibility</em>, <em>modifiability</em>, or <em>plasticity</em>.</li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 4 — Analogies
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <h2>🧠 Intuitive Analogies</h2>
+
+    <h3>The Hospital Analogy for Reliability</h3>
+    <p>Think of a hospital. A reliable hospital doesn't mean "nothing ever goes wrong." Nurses get sick, equipment breaks, power flickers. A reliable hospital means that when any one of those things happens, <em>patients are still cared for</em>. They have backup generators, on-call staff, redundant medical supplies. The hospital is designed to stay functional <em>in the presence of faults</em>. Your data system should be the same.</p>
+
+    <h3>The Restaurant Analogy for Scalability</h3>
+    <p>Imagine a tiny breakfast café that serves 30 customers perfectly. Then it gets reviewed by a food blogger and suddenly 3,000 people show up. The café can't just "work harder" — it needs a fundamentally different approach: multiple chefs, table management software, maybe a second location. Scalability is about designing for the next 10x, 100x, and 1000x of growth — ideally before you desperately need it.</p>
+
+    <h3>The Codebase vs. Franchise Analogy for Maintainability</h3>
+    <p>A poorly maintained system is like a restaurant where the head chef memorized all the recipes and quit. A maintainable system is a franchise: the recipes are written down, standardized, and teachable. Any competent chef can walk in, read the manual, and make the food correctly. Maintainability is about writing systems that your future teammates — and future you — can understand and change safely.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 5 — Real-World Examples
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <h2>🏢 Real-World Examples</h2>
+
+    <h3>Amazon: All Three at Once</h3>
+    <p>Amazon's infrastructure is arguably the most studied data system in history. Their 2006 paper on Dynamo DB was partly motivated by reliability requirements: every node failure during holiday shopping season could mean millions in lost revenue. They chose availability over consistency (we'll revisit this in Chapter 9 — CAP theorem). Amazon's internal study found that every 100ms of latency cost them 1% in sales. That's a scalability measurement turned into a business requirement.</p>
+
+    <h3>Twitter's Fanout Problem</h3>
+    <p>When you tweet, how does every one of your followers see it instantly in their feed? Early Twitter computed your feed on-the-fly by querying everyone you follow — this was simple but broke under load. Then they switched to <em>fanout-on-write</em>: when you tweet, immediately write a copy to every follower's timeline cache. Fast reads, but writing one tweet for a celebrity with 100M followers means 100M writes. They eventually built a hybrid. This is the essence of scalability trade-offs — there's rarely a free lunch.</p>
+
+    <h3>Netflix: Chaos Engineering for Reliability</h3>
+    <p>Netflix invented <em>Chaos Engineering</em> — deliberately injecting failures into production systems to ensure resilience. Their Simian Army tools (Chaos Monkey, Chaos Gorilla, Chaos Kong) kill individual instances, entire availability zones, and entire AWS regions respectively. They do this because they'd rather discover failure modes under controlled conditions than be surprised during a Super Bowl stream. This is reliability thinking at industrial scale.</p>
+
+    <h3>Google Bigtable & Spanner: Maintainability at Scale</h3>
+    <p>Google's internal systems are operated by thousands of engineers. Their systems are designed with operability in mind — automatic sharding, self-healing replication, rich observability. When Google open-sourced design papers for Bigtable and Spanner, it wasn't charity — it was evidence that principled data system design has durable, transferable value.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 6 — Deep Dive
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <h2>🔬 Deep Dive: The Trade-offs Nobody Tells You</h2>
+
+    <h3>These Three Concerns Are Often in Tension</h3>
+    <p>Reliability costs money and complexity. Adding redundancy, replication, and failover mechanisms makes a system more complex — which hurts maintainability. Making a system scale horizontally across many nodes introduces distributed systems problems — which hurts reliability. The art of data system design is <strong>navigating these tensions intelligently</strong>.</p>
+
+    <div class="code-block">
+Simple example of the tension:
+─────────────────────────────────────
+Single database server:
+  ✅ Simple to understand (maintainability)
+  ❌ If it dies, everything dies (reliability)
+  ❌ Can't scale beyond one machine (scalability)
+
+Replicated database cluster:
+  ✅ Survives individual node failures (reliability)
+  ✅ Read queries can scale horizontally (scalability)
+  ❌ Now you have replication lag, split-brain risks,
+     complex failover logic (maintainability ↓)
+─────────────────────────────────────</div>
+
+    <h3>The Hardest Problems Are Social, Not Technical</h3>
+    <p>Kleppmann notes that many of the hardest data system challenges are organizational. Who decides what "reliable enough" means? Who is on-call at 3 AM? How do you coordinate schema changes across 50 microservices owned by 10 teams? Maintainability is as much about team dynamics as it is about code quality.</p>
+
+    <h3>Functional vs. Non-Functional Requirements</h3>
+    <p>Reliability, scalability, and maintainability are all <strong>non-functional requirements</strong> — they describe <em>how</em> a system works, not <em>what</em> it does. Functional requirements are what most product conversations focus on ("users should be able to search for products"). Non-functional requirements are often what actually determine whether a system succeeds or fails in production. This book is almost entirely about non-functional requirements.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 7 — Misconceptions
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <h2>⚠️ Common Misconceptions</h2>
+
+    <h3>Misconception 1: "We'll add reliability later."</h3>
+    <p>Reliability is not a feature you bolt on. It's an architectural property that emerges from decisions made early: choice of storage engine, replication strategy, error handling patterns, data model. Retrofitting reliability into a system that wasn't designed for it is one of the most expensive and painful engineering tasks imaginable. The time to think about fault tolerance is before the first line of production code is written.</p>
+
+    <h3>Misconception 2: "Scalability means making it work for millions of users."</h3>
+    <p>Scalability is context-specific. A system that needs to handle 10x more read traffic is a fundamentally different problem from one that needs to handle 10x more write traffic, or 10x more data volume. "Scalable" without context is meaningless. You need to know your <em>specific load parameters</em> and design for those. We'll formalize this with the concept of load parameters and performance percentiles in Day 4.</p>
+
+    <h3>Misconception 3: "Our system is maintainable because we have good variable names."</h3>
+    <p>Maintainability goes far beyond code quality. It encompasses: Is there a runbook for operations? Can you deploy without downtime? Can you roll back a bad release in minutes? Can a new engineer understand the data model in a day? Is there good monitoring and alerting? A beautifully written codebase that's impossible to deploy safely is not maintainable.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 8 — Think Questions
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <h2>🤔 Pause and Think</h2>
+
+    <details class="think">
+      <summary>🤔 Think #1: Where do you stand on the spectrum?</summary>
+      <div class="think-body">
+        <p>Think of a system you've worked on or used frequently. Was it compute-intensive or data-intensive? What were its actual bottlenecks — CPU, storage, network, data complexity? How did those bottlenecks manifest as real problems users experienced?</p>
+        <p><em>Example reflection:</em> A ride-sharing app is data-intensive — the challenges are matching drivers to riders in real-time (latency), storing millions of trip records (storage), handling driver location updates 4x per second (write throughput), and ensuring pricing is consistent even when servers fail mid-trip (reliability). CPU is rarely the bottleneck.</p>
+      </div>
+    </details>
+
+    <details class="think">
+      <summary>🤔 Think #2: The Tension in Practice</summary>
+      <div class="think-body">
+        <p>Can you think of a real-world system where improving reliability made it harder to maintain? Where making something more scalable made it harder to reason about? The three concerns are often in direct tension with each other.</p>
+        <p><em>Hint:</em> Consider what happens when a startup that started with a single Postgres database decides to add read replicas, then sharding, then a caching layer. Each step adds reliability and scalability. Each step also adds operational complexity. At what point does the complexity start costing more than it saves?</p>
+      </div>
+    </details>
+
+    <details class="think">
+      <summary>🤔 Think #3: Reliability vs. Fault-Tolerance</summary>
+      <div class="think-body">
+        <p>Kleppmann says it's usually better to <em>tolerate</em> faults than to <em>prevent</em> them (with certain exceptions, like security vulnerabilities). Why might this be? What would it even mean to "prevent" a hardware fault?</p>
+        <p><em>Insight:</em> You can't prevent a hard drive from dying — it's a physical certainty over time. But you can design your system so that when a drive dies, no data is lost and the system keeps running. Prevention focuses on eliminating individual failure causes; tolerance focuses on designing away the impact of failure causes. Tolerance tends to be more achievable and more robust.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 9 — Quick Check Quizzes
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <h2>⚡ Quick Check</h2>
+
+    <div class="quiz-card">
+      <div class="quiz-label">⚡ Quick Check #1</div>
+      <p class="quiz-question">What is the difference between a <strong>fault</strong> and a <strong>failure</strong> in Kleppmann's terminology?</p>
+      <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+      <div class="quiz-answer">
+        <p>A <strong>fault</strong> is when one component of a system deviates from its spec — a single disk corrupts data, a single node becomes unreachable, a single process crashes. A <strong>failure</strong> is when the <em>entire system</em> stops providing its required service to users.</p>
+        <p>Fault-tolerant systems are designed so that individual faults do not escalate into system-wide failures. The goal is to prevent faults from becoming failures — not to prevent faults entirely (which is often impossible).</p>
+      </div>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-label">⚡ Quick Check #2</div>
+      <p class="quiz-question">Which of the three concerns (Reliability, Scalability, Maintainability) does this describe: "We noticed that adding replicas made our monitoring dashboards too complex to understand, and our on-call engineers couldn't tell which alerts were real."</p>
+      <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+      <div class="quiz-answer">
+        <p>This is primarily a <strong>Maintainability</strong> problem — specifically the <em>operability</em> sub-concern. Adding replicas improved scalability, but the resulting system became harder for operations teams to manage. The complexity of the monitoring and alerting exceeded the team's ability to interpret it correctly.</p>
+        <p>It also touches on <strong>Reliability</strong> — if engineers can't distinguish real alerts from noise, they'll ignore alerts or respond to the wrong ones, which can lead to actual failures going undetected.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 10 — Key Takeaways
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <h2>✅ Key Takeaways</h2>
+    <ul class="takeaways">
+      <li>Data-intensive applications are bottlenecked by <strong>data</strong> (volume, complexity, rate of change), not CPU. Most modern applications are data-intensive.</li>
+      <li>The three core concerns of any data system are <strong>Reliability</strong> (works correctly even when faults occur), <strong>Scalability</strong> (has a plan for handling growth), and <strong>Maintainability</strong> (is easy for humans to operate and evolve).</li>
+      <li>A <strong>fault</strong> is a single component deviation; a <strong>failure</strong> is the whole system going down. Fault-tolerant design prevents faults from becoming failures.</li>
+      <li>These three concerns are often <strong>in tension</strong> — improving one can hurt the others. Good data system design means navigating these trade-offs consciously.</li>
+      <li>Reliability, scalability, and maintainability are <strong>non-functional requirements</strong> — they describe how a system behaves, and are often the determining factor in whether a system survives contact with production reality.</li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       Tomorrow's Preview
+  ══════════════════════════════════════════ -->
+  <div class="tomorrow">
+    <h2>🔭 Tomorrow: Day 2</h2>
+    <p>We dive into <strong>Reliability</strong> in depth — specifically, the things that go catastrophically wrong with <strong>hardware faults and software errors</strong>. We'll look at how disk failures, RAM bit-flips, and cascading software bugs have brought down entire systems — and what the world's most resilient architectures do differently.</p>
+    <p style="margin-top:10px;"><strong>Tomorrow's hook:</strong> A single flipped bit in RAM once caused a Boeing 747 to nosedive. What does that have to do with your database?</p>
+  </div>
+
+  <!-- ── Bottom nav ── -->
+  <div class="nav-links footer-nav">
+    <a class="disabled" href="#">← Previous Lesson</a>
+    <a href="day-02.html">Next Lesson →</a>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  // Animate progress bar on load
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      document.getElementById('progressFill').style.width = '0.92%';
+    }, 100);
+  });
+
+  // Toggle quiz answers
+  function toggleAnswer(btn) {
+    var answer = btn.nextElementSibling;
+    if (answer.style.display === 'block') {
+      answer.style.display = 'none';
+      btn.textContent = 'Reveal Answer';
+    } else {
+      answer.style.display = 'block';
+      btn.textContent = 'Hide Answer';
+    }
+  }
+</script>
+</body>
+</html>

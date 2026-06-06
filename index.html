@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 DDIA Study Notes</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 32px 16px 64px;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .header h1 {
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    color: #58a6ff;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: #8b949e;
+    font-size: 1rem;
+    margin-bottom: 24px;
+  }
+
+  /* ── Progress ── */
+  .progress-wrap {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 40px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #8b949e;
+    margin-bottom: 8px;
+  }
+  .progress-bar-track {
+    background: #21262d;
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #58a6ff, #3fb950);
+    border-radius: 4px;
+    width: 0.92%;
+    transition: width 1.2s ease;
+  }
+
+  /* ── Chapter headings ── */
+  .chapter-heading {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #58a6ff;
+    margin: 36px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #21262d;
+  }
+
+  /* ── Grid of cards ── */
+  .lessons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+  }
+
+  .lesson-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 18px 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .2s, background .2s, transform .15s;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .lesson-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, #58a6ff, #3fb950);
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .lesson-card:hover {
+    border-color: #58a6ff;
+    background: #1c2128;
+    transform: translateY(-2px);
+  }
+  .lesson-card:hover::before { opacity: 1; }
+
+  .card-day {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: #3fb950;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e6edf3;
+    line-height: 1.35;
+  }
+  .card-chapter {
+    font-size: 12px;
+    color: #8b949e;
+  }
+
+  /* ── Upcoming cards (greyed out) ── */
+  .lesson-card.upcoming {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: default;
+  }
+  .lesson-card.upcoming .card-day { color: #484f58; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 48px;
+    color: #484f58;
+    font-size: 13px;
+  }
+  .footer a { color: #58a6ff; text-decoration: none; }
+
+  @media (max-width: 480px) {
+    .lessons-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>📚 DDIA Study Notes</h1>
+    <p>Day-by-day deep-dives into <em>Designing Data-Intensive Applications</em> by Martin Kleppmann</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Overall Progress</span>
+      <span id="progressText">1 / 109 lessons</span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- ── Chapter 1 ── -->
+  <div class="chapter-heading">Chapter 1 — Reliable, Scalable, Maintainable Applications (Days 1–6)</div>
+  <div class="lessons-grid">
+    <a class="lesson-card" href="day-01.html">
+      <span class="card-day">Day 1 ✅</span>
+      <span class="card-title">What is DDIA? The Three Concerns</span>
+      <span class="card-chapter">Chapter 1</span>
+    </a>
+    <div class="lesson-card upcoming">
+      <span class="card-day">Day 2</span>
+      <span class="card-title">Reliability — Hardware & Software Faults</span>
+      <span class="card-chapter">Chapter 1</span>
+    </div>
+    <div class="lesson-card upcoming">
+      <span class="card-day">Day 3</span>
+      <span class="card-title">Reliability — Human Errors</span>
+      <span class="card-chapter">Chapter 1</span>
+    </div>
+    <div class="lesson-card upcoming">
+      <span class="card-day">Day 4</span>
+      <span class="card-title">Scalability — Describing Load & Performance</span>
+      <span class="card-chapter">Chapter 1</span>
+    </div>
+    <div class="lesson-card upcoming">
+      <span class="card-day">Day 5</span>
+      <span class="card-title">Scalability — Coping with Load</span>
+      <span class="card-chapter">Chapter 1</span>
+    </div>
+    <div class="lesson-card upcoming">
+      <span class="card-day">Day 6</span>
+      <span class="card-title">Maintainability</span>
+      <span class="card-chapter">Chapter 1</span>
+    </div>
+  </div>
+
+  <!-- ── Chapter 2 ── -->
+  <div class="chapter-heading">Chapter 2 — Data Models and Query Languages (Days 7–14)</div>
+  <div class="lessons-grid">
+    <div class="lesson-card upcoming"><span class="card-day">Day 7</span><span class="card-title">Relational Model, Birth of NoSQL</span><span class="card-chapter">Chapter 2</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 8</span><span class="card-title">Object-Relational Mismatch</span><span class="card-chapter">Chapter 2</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 9</span><span class="card-title">Are Document DBs Repeating History?</span><span class="card-chapter">Chapter 2</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 10</span><span class="card-title">Relational Model Defense</span><span class="card-chapter">Chapter 2</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 11</span><span class="card-title">Relational vs Document DBs Today</span><span class="card-chapter">Chapter 2</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 12</span><span class="card-title">Query Languages — SQL, MapReduce</span><span class="card-chapter">Chapter 2</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 13</span><span class="card-title">Graph-like Data Models</span><span class="card-chapter">Chapter 2</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 14</span><span class="card-title">Triple-stores, SPARQL, Datalog</span><span class="card-chapter">Chapter 2</span></div>
+  </div>
+
+  <!-- ── Chapter 3 ── -->
+  <div class="chapter-heading">Chapter 3 — Storage and Retrieval (Days 15–25)</div>
+  <div class="lessons-grid">
+    <div class="lesson-card upcoming"><span class="card-day">Day 15</span><span class="card-title">World's Simplest DB, Hash Indexes</span><span class="card-chapter">Chapter 3</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 16</span><span class="card-title">SSTables Intro</span><span class="card-chapter">Chapter 3</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 17</span><span class="card-title">LSM-Trees</span><span class="card-chapter">Chapter 3</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 18</span><span class="card-title">B-Trees</span><span class="card-chapter">Chapter 3</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 19</span><span class="card-title">Comparing B-Trees and LSM-Trees</span><span class="card-chapter">Chapter 3</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 20</span><span class="card-title">Other Indexing Structures</span><span class="card-chapter">Chapter 3</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 21</span><span class="card-title">Multi-column Indexes, Full-text Search</span><span class="card-chapter">Chapter 3</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 22</span><span class="card-title">OLTP vs OLAP</span><span class="card-chapter">Chapter 3</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 23</span><span class="card-title">Data Warehousing, Star &amp; Snowflake Schemas</span><span class="card-chapter">Chapter 3</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 24</span><span class="card-title">Column-oriented Storage &amp; Compression</span><span class="card-chapter">Chapter 3</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 25</span><span class="card-title">Sort Order, Writing to Column Storage</span><span class="card-chapter">Chapter 3</span></div>
+  </div>
+
+  <!-- ── Chapter 4 ── -->
+  <div class="chapter-heading">Chapter 4 — Encoding and Evolution (Days 26–31)</div>
+  <div class="lessons-grid">
+    <div class="lesson-card upcoming"><span class="card-day">Day 26</span><span class="card-title">JSON, XML, Binary Encoding</span><span class="card-chapter">Chapter 4</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 27</span><span class="card-title">Thrift and Protocol Buffers</span><span class="card-chapter">Chapter 4</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 28</span><span class="card-title">Avro</span><span class="card-chapter">Chapter 4</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 29</span><span class="card-title">Merits of Schemas, Dataflow through DBs</span><span class="card-chapter">Chapter 4</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 30</span><span class="card-title">Dataflow through Services — REST &amp; RPC</span><span class="card-chapter">Chapter 4</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 31</span><span class="card-title">Message-passing Dataflow</span><span class="card-chapter">Chapter 4</span></div>
+  </div>
+
+  <!-- ── Chapter 5 ── -->
+  <div class="chapter-heading">Chapter 5 — Replication (Days 32–43)</div>
+  <div class="lessons-grid">
+    <div class="lesson-card upcoming"><span class="card-day">Day 32</span><span class="card-title">Leaders and Followers</span><span class="card-chapter">Chapter 5</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 33</span><span class="card-title">Sync vs Async Replication</span><span class="card-chapter">Chapter 5</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 34</span><span class="card-title">Handling Node Outages</span><span class="card-chapter">Chapter 5</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 35</span><span class="card-title">Implementation of Replication Logs</span><span class="card-chapter">Chapter 5</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 36</span><span class="card-title">Problems with Replication Lag</span><span class="card-chapter">Chapter 5</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 37</span><span class="card-title">Reading Your Own Writes</span><span class="card-chapter">Chapter 5</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 38</span><span class="card-title">Monotonic Reads, Consistent Prefix Reads</span><span class="card-chapter">Chapter 5</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 39</span><span class="card-title">Solutions for Replication Lag, Multi-leader Intro</span><span class="card-chapter">Chapter 5</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 40</span><span class="card-title">Multi-leader Use Cases, Write Conflicts</span><span class="card-chapter">Chapter 5</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 41</span><span class="card-title">Conflict Resolution, Multi-leader Topologies</span><span class="card-chapter">Chapter 5</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 42</span><span class="card-title">Leaderless Replication</span><span class="card-chapter">Chapter 5</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 43</span><span class="card-title">Quorums, Sloppy Quorums</span><span class="card-chapter">Chapter 5</span></div>
+  </div>
+
+  <!-- ── Chapters 6–12 abbreviated ── -->
+  <div class="chapter-heading">Chapter 6 — Partitioning (Days 44–49)</div>
+  <div class="lessons-grid">
+    <div class="lesson-card upcoming"><span class="card-day">Day 44</span><span class="card-title">Intro, Partitioning &amp; Replication</span><span class="card-chapter">Chapter 6</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 45</span><span class="card-title">Key Range vs Hash Partitioning</span><span class="card-chapter">Chapter 6</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 46</span><span class="card-title">Skewed Workloads, Secondary Indexes</span><span class="card-chapter">Chapter 6</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 47</span><span class="card-title">Term-based Secondary Indexes</span><span class="card-chapter">Chapter 6</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 48</span><span class="card-title">Rebalancing Strategies</span><span class="card-chapter">Chapter 6</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 49</span><span class="card-title">Request Routing</span><span class="card-chapter">Chapter 6</span></div>
+  </div>
+
+  <div class="chapter-heading">Chapter 7 — Transactions (Days 50–60)</div>
+  <div class="lessons-grid">
+    <div class="lesson-card upcoming"><span class="card-day">Day 50</span><span class="card-title">ACID — Atomicity &amp; Consistency</span><span class="card-chapter">Chapter 7</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 51</span><span class="card-title">Isolation, Durability, Single vs Multi-object</span><span class="card-chapter">Chapter 7</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 52</span><span class="card-title">Handling Errors &amp; Aborts</span><span class="card-chapter">Chapter 7</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 53</span><span class="card-title">Weak Isolation — Read Committed</span><span class="card-chapter">Chapter 7</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 54</span><span class="card-title">Snapshot Isolation &amp; Repeatable Read</span><span class="card-chapter">Chapter 7</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 55</span><span class="card-title">Implementing Snapshot Isolation</span><span class="card-chapter">Chapter 7</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 56</span><span class="card-title">Preventing Lost Updates</span><span class="card-chapter">Chapter 7</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 57</span><span class="card-title">Write Skew &amp; Phantoms</span><span class="card-chapter">Chapter 7</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 58</span><span class="card-title">Serializability — Actual Serial Execution</span><span class="card-chapter">Chapter 7</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 59</span><span class="card-title">Two-phase Locking</span><span class="card-chapter">Chapter 7</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 60</span><span class="card-title">Serializable Snapshot Isolation</span><span class="card-chapter">Chapter 7</span></div>
+  </div>
+
+  <div class="chapter-heading">Chapter 8 — The Trouble with Distributed Systems (Days 61–68)</div>
+  <div class="lessons-grid">
+    <div class="lesson-card upcoming"><span class="card-day">Day 61</span><span class="card-title">Faults and Partial Failures</span><span class="card-chapter">Chapter 8</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 62</span><span class="card-title">Unreliable Networks</span><span class="card-chapter">Chapter 8</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 63</span><span class="card-title">Detecting Faults, Timeouts</span><span class="card-chapter">Chapter 8</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 64</span><span class="card-title">Synchronous vs Async Networks</span><span class="card-chapter">Chapter 8</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 65</span><span class="card-title">Unreliable Clocks</span><span class="card-chapter">Chapter 8</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 66</span><span class="card-title">Clock Sync, Timestamps for Ordering</span><span class="card-chapter">Chapter 8</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 67</span><span class="card-title">Process Pauses, Knowledge &amp; Truth</span><span class="card-chapter">Chapter 8</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 68</span><span class="card-title">Byzantine Generals, System Models</span><span class="card-chapter">Chapter 8</span></div>
+  </div>
+
+  <div class="chapter-heading">Chapter 9 — Consistency and Consensus (Days 69–79)</div>
+  <div class="lessons-grid">
+    <div class="lesson-card upcoming"><span class="card-day">Day 69</span><span class="card-title">Linearizability</span><span class="card-chapter">Chapter 9</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 70</span><span class="card-title">What Makes a System Linearizable?</span><span class="card-chapter">Chapter 9</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 71</span><span class="card-title">Relying on Linearizability, Implementing It</span><span class="card-chapter">Chapter 9</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 72</span><span class="card-title">Cost of Linearizability, CAP Theorem</span><span class="card-chapter">Chapter 9</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 73</span><span class="card-title">Ordering Guarantees, Sequence Numbers</span><span class="card-chapter">Chapter 9</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 74</span><span class="card-title">Lamport Timestamps</span><span class="card-chapter">Chapter 9</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 75</span><span class="card-title">Total Order Broadcast</span><span class="card-chapter">Chapter 9</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 76</span><span class="card-title">Distributed Transactions, 2PC</span><span class="card-chapter">Chapter 9</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 77</span><span class="card-title">Distributed Transactions in Practice</span><span class="card-chapter">Chapter 9</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 78</span><span class="card-title">Fault-tolerant Consensus Algorithms</span><span class="card-chapter">Chapter 9</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 79</span><span class="card-title">Membership &amp; Coordination Services</span><span class="card-chapter">Chapter 9</span></div>
+  </div>
+
+  <div class="chapter-heading">Chapter 10 — Batch Processing (Days 80–89)</div>
+  <div class="lessons-grid">
+    <div class="lesson-card upcoming"><span class="card-day">Day 80</span><span class="card-title">Unix Tools and HDFS</span><span class="card-chapter">Chapter 10</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 81</span><span class="card-title">MapReduce and Distributed Filesystems</span><span class="card-chapter">Chapter 10</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 82</span><span class="card-title">MapReduce Workflows</span><span class="card-chapter">Chapter 10</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 83</span><span class="card-title">Reduce-side Joins and Grouping</span><span class="card-chapter">Chapter 10</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 84</span><span class="card-title">Map-side Joins</span><span class="card-chapter">Chapter 10</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 85</span><span class="card-title">Output of Batch Workflows</span><span class="card-chapter">Chapter 10</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 86</span><span class="card-title">Hadoop vs Distributed Databases</span><span class="card-chapter">Chapter 10</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 87</span><span class="card-title">Beyond MapReduce — Dataflow Engines</span><span class="card-chapter">Chapter 10</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 88</span><span class="card-title">Graphs and Iterative Processing</span><span class="card-chapter">Chapter 10</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 89</span><span class="card-title">High-level APIs</span><span class="card-chapter">Chapter 10</span></div>
+  </div>
+
+  <div class="chapter-heading">Chapter 11 — Stream Processing (Days 90–99)</div>
+  <div class="lessons-grid">
+    <div class="lesson-card upcoming"><span class="card-day">Day 90</span><span class="card-title">Intro, Messaging Systems</span><span class="card-chapter">Chapter 11</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 91</span><span class="card-title">Partitioned Logs</span><span class="card-chapter">Chapter 11</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 92</span><span class="card-title">Databases and Streams, CDC</span><span class="card-chapter">Chapter 11</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 93</span><span class="card-title">Event Sourcing</span><span class="card-chapter">Chapter 11</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 94</span><span class="card-title">State, Streams, and Immutability</span><span class="card-chapter">Chapter 11</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 95</span><span class="card-title">Uses of Stream Processing</span><span class="card-chapter">Chapter 11</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 96</span><span class="card-title">CEP, Stream Analytics</span><span class="card-chapter">Chapter 11</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 97</span><span class="card-title">Materialized Views, Stream Joins</span><span class="card-chapter">Chapter 11</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 98</span><span class="card-title">Fault Tolerance</span><span class="card-chapter">Chapter 11</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 99</span><span class="card-title">Summary</span><span class="card-chapter">Chapter 11</span></div>
+  </div>
+
+  <div class="chapter-heading">Chapter 12 — The Future of Data Systems (Days 100–109)</div>
+  <div class="lessons-grid">
+    <div class="lesson-card upcoming"><span class="card-day">Day 100</span><span class="card-title">Data Integration</span><span class="card-chapter">Chapter 12</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 101</span><span class="card-title">Combining Specialized Tools</span><span class="card-chapter">Chapter 12</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 102</span><span class="card-title">Batch and Stream Processing</span><span class="card-chapter">Chapter 12</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 103</span><span class="card-title">Unbundling Databases</span><span class="card-chapter">Chapter 12</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 104</span><span class="card-title">Designing around Dataflow</span><span class="card-chapter">Chapter 12</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 105</span><span class="card-title">Observing Derived State</span><span class="card-chapter">Chapter 12</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 106</span><span class="card-title">Aiming for Correctness</span><span class="card-chapter">Chapter 12</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 107</span><span class="card-title">Timeliness and Integrity</span><span class="card-chapter">Chapter 12</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 108</span><span class="card-title">Trust but Verify</span><span class="card-chapter">Chapter 12</span></div>
+    <div class="lesson-card upcoming"><span class="card-day">Day 109</span><span class="card-title">Ethics, Privacy, Final Summary</span><span class="card-chapter">Chapter 12</span></div>
+  </div>
+
+  <div class="footer">
+    <p>Built with ❤️ — one lesson per day through all 109 sessions of DDIA.</p>
+  </div>
+
+</div>
+
+<script>
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      document.getElementById('progressFill').style.width = '0.92%';
+    }, 100);
+  });
+</script>
+</body>
+</html>
