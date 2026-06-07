@@ -3,555 +3,1268 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Day 1 — DDIA Daily Lesson</title>
+<title>Day 1 — What Is DDIA? The Three Pillars of Data Systems</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─── Reset & Base ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: #0d1117;
+  color: #e6edf3;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
 
-  body {
-    background: #0d1117;
-    color: #e6edf3;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 16px;
-    line-height: 1.7;
-    padding: 24px 16px 64px;
-  }
+/* ─── Navbar ─────────────────────────────────────────────────── */
+.navbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #161b22; border-bottom: 1px solid #30363d;
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 24px; height: 56px;
+}
+.nav-logo { font-weight: 700; font-size: 1rem; color: #58a6ff; text-decoration: none; white-space: nowrap; }
+.nav-logo:hover { color: #79c0ff; }
+.nav-spacer { flex: 1; }
+.chapter-dropdown { position: relative; }
+.chapter-btn {
+  background: #21262d; border: 1px solid #30363d; color: #c9d1d9;
+  padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: border-color .2s;
+}
+.chapter-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+.chapter-menu {
+  display: none; position: absolute; right: 0; top: calc(100% + 8px);
+  background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+  min-width: 260px; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.4); overflow: hidden;
+}
+.chapter-menu.open { display: block; }
+.chapter-menu a {
+  display: block; padding: 10px 16px; color: #8b949e; text-decoration: none;
+  font-size: 13px; transition: background .15s, color .15s;
+}
+.chapter-menu a:hover { background: #21262d; color: #e6edf3; }
+.chapter-menu a.current { color: #58a6ff; background: #1c2d44; }
+.nav-search {
+  background: none; border: none; color: #8b949e; font-size: 18px;
+  cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: color .2s; text-decoration: none;
+}
+.nav-search:hover { color: #58a6ff; }
 
-  .container { max-width: 800px; margin: 0 auto; }
+/* ─── Layout ──────────────────────────────────────────────────── */
+.page-wrapper {
+  max-width: 1100px; margin: 0 auto; padding: 0 16px 80px;
+  display: grid; grid-template-columns: 1fr 300px; grid-template-rows: auto 1fr; gap: 0 28px;
+}
+.page-header { grid-column: 1 / -1; padding: 40px 0 32px; }
+.main-col { grid-column: 1; min-width: 0; }
+.sidebar { grid-column: 2; }
+@media (max-width: 768px) {
+  .page-wrapper { grid-template-columns: 1fr; padding: 0 12px 60px; }
+  .page-header { padding: 24px 0 20px; }
+  .sidebar { grid-column: 1; }
+}
 
-  /* ── Header ── */
-  .site-label {
-    font-size: 13px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: #8b949e;
-    margin-bottom: 6px;
-  }
-  h1.main-title {
-    font-size: clamp(1.6rem, 4vw, 2.2rem);
-    color: #58a6ff;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-  .subtitle {
-    color: #8b949e;
-    font-size: 1rem;
-    margin-top: 6px;
-    margin-bottom: 20px;
-  }
+/* ─── Header ──────────────────────────────────────────────────── */
+.day-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #1c2d44; border: 1px solid #58a6ff44; color: #58a6ff;
+  font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; margin-bottom: 16px;
+  animation: badgePulse 3s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(88,166,255,0); }
+  50% { box-shadow: 0 0 12px 3px rgba(88,166,255,0.25); }
+}
+.page-title { font-size: clamp(1.8rem,4vw,2.6rem); font-weight: 800; color: #e6edf3; line-height: 1.2; margin-bottom: 8px; }
+.page-chapter { font-size: 14px; color: #8b949e; margin-bottom: 24px; }
+.progress-container { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 16px 20px; }
+.progress-labels { display: flex; justify-content: space-between; font-size: 12px; color: #8b949e; margin-bottom: 10px; }
+.progress-track { background: #21262d; border-radius: 6px; height: 8px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg,#1f6feb,#58a6ff); width: 0; transition: width 1.2s ease; }
 
-  /* ── Progress bar ── */
-  .progress-wrap {
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 14px 18px;
-    margin-bottom: 24px;
-  }
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    color: #8b949e;
-    margin-bottom: 8px;
-  }
-  .progress-bar-track {
-    background: #21262d;
-    border-radius: 4px;
-    height: 8px;
-    overflow: hidden;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #58a6ff, #3fb950);
-    border-radius: 4px;
-    width: 0.92%;
-    transition: width 1s ease;
-  }
+/* ─── Section Cards ──────────────────────────────────────────── */
+.section-card {
+  background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 28px; margin-bottom: 24px;
+  opacity: 0; transform: translateY(20px); transition: opacity .5s ease, transform .5s ease, border-color .2s;
+}
+.section-card.visible { opacity: 1; transform: translateY(0); }
+.section-card:hover { border-color: #444c56; }
+.section-card h2 { font-size: 1.35rem; font-weight: 700; color: #58a6ff; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.section-card h3 { font-size: 1.05rem; font-weight: 600; color: #c9d1d9; margin: 20px 0 10px; }
+.section-card p { color: #c9d1d9; margin-bottom: 12px; }
+.section-card p:last-child { margin-bottom: 0; }
+.card-hook { border-left: 4px solid #f85149; }
+.card-hook h2 { color: #f85149; }
+.card-sde2 { background: #1c2128; border-left: 4px solid #3fb950; }
+.card-sde2 h2 { color: #3fb950; }
+.card-interview { background: #1c1a0f; border-left: 4px solid #d29922; }
+.card-interview h2 { color: #d29922; }
+.card-connections { border-left: 4px solid #bc8cff; }
+.card-connections h2 { color: #bc8cff; }
 
-  /* ── Navigation ── */
-  .nav-links {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 32px;
-    flex-wrap: wrap;
-  }
-  .nav-links a {
-    color: #58a6ff;
-    text-decoration: none;
-    font-size: 14px;
-    padding: 8px 14px;
-    border: 1px solid #30363d;
-    border-radius: 6px;
-    background: #161b22;
-    transition: background .2s, border-color .2s;
-  }
-  .nav-links a:hover { background: #21262d; border-color: #58a6ff; }
-  .nav-links a.disabled { color: #484f58; pointer-events: none; border-color: #21262d; }
+/* ─── Code ────────────────────────────────────────────────────── */
+pre, code { font-family: 'JetBrains Mono','Fira Code',Consolas,monospace; font-size: 13.5px; }
+pre {
+  background: #0d1117; border: 1px solid #30363d; border-left: 4px solid #58a6ff;
+  border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 16px 0;
+  animation: leftBorderPulse 4s ease-in-out infinite;
+}
+@keyframes leftBorderPulse {
+  0%,100% { border-left-color: #58a6ff; }
+  50% { border-left-color: #1f6feb; }
+}
+code { color: #79c0ff; background: #161b22; padding: 2px 6px; border-radius: 4px; }
 
-  /* ── Cards / Sections ── */
-  .card {
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 10px;
-    padding: 24px 28px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.4);
-  }
-  h2 {
-    font-size: 1.25rem;
-    color: #58a6ff;
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #21262d;
-  }
-  h3 {
-    font-size: 1.05rem;
-    color: #e6edf3;
-    margin: 20px 0 8px;
-  }
-  p { margin-bottom: 14px; }
-  p:last-child { margin-bottom: 0; }
-  ul, ol { padding-left: 22px; margin-bottom: 14px; }
-  li { margin-bottom: 6px; }
-  strong { color: #e6edf3; }
+/* ─── Sidebar ─────────────────────────────────────────────────── */
+.sidebar-sticky { position: sticky; top: 72px; display: flex; flex-direction: column; gap: 16px; }
+.sidebar-box { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 18px; }
+.sidebar-box h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: #8b949e; margin-bottom: 14px; }
+.sidebar-nav a {
+  display: block; color: #8b949e; text-decoration: none; font-size: 13px; padding: 5px 10px;
+  border-radius: 6px; border-left: 2px solid transparent; transition: all .2s; margin-bottom: 2px;
+}
+.sidebar-nav a:hover { color: #e6edf3; background: #21262d; }
+.sidebar-nav a.active { color: #58a6ff; border-left-color: #58a6ff; background: #1c2d4433; }
+.related-pill {
+  display: inline-block; background: #1c2d44; color: #58a6ff; font-size: 12px;
+  padding: 3px 10px; border-radius: 12px; margin: 3px; text-decoration: none;
+  border: 1px solid #58a6ff33; transition: all .2s;
+}
+.related-pill:hover { background: #58a6ff; color: #0d1117; }
+.locked-pill {
+  display: inline-block; background: #21262d; color: #8b949e; font-size: 12px;
+  padding: 3px 10px; border-radius: 12px; margin: 3px; border: 1px solid #30363d;
+}
+.interview-box {
+  background: #1c1a0f; border: 1px solid #d2992244; border-radius: 8px;
+  padding: 12px; font-size: 13px; color: #c9d1d9; line-height: 1.5;
+}
 
-  /* ── Code blocks ── */
-  .code-block {
-    background: #0d1117;
-    border-left: 3px solid #58a6ff;
-    border-radius: 0 6px 6px 0;
-    padding: 14px 18px;
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-    font-size: 13.5px;
-    line-height: 1.6;
-    overflow-x: auto;
-    margin: 16px 0;
-    color: #c9d1d9;
-  }
+/* ─── Diagram ─────────────────────────────────────────────────── */
+.diagram-wrap {
+  background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 20px; margin: 20px 0; overflow: hidden;
+}
+.diagram-title { font-size: 13px; color: #8b949e; text-align: center; margin-bottom: 12px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
+.flow-arrow { stroke-dasharray: 8 4; animation: dashFlow 1.5s linear infinite; }
+.flow-arrow-slow { stroke-dasharray: 8 4; animation: dashFlow 2.5s linear infinite; }
+@keyframes dashFlow { to { stroke-dashoffset: -24; } }
 
-  /* ── Key Insight box ── */
-  .insight {
-    background: #0d2137;
-    border: 1px solid #1f4068;
-    border-left: 4px solid #58a6ff;
-    border-radius: 6px;
-    padding: 16px 20px;
-    margin: 18px 0;
-  }
-  .insight-label {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: #58a6ff;
-    margin-bottom: 6px;
-  }
+/* ─── Step-Through ────────────────────────────────────────────── */
+.step-controls { display: flex; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.step-btn {
+  background: #21262d; border: 1px solid #30363d; color: #c9d1d9;
+  padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all .2s;
+}
+.step-btn:hover:not(:disabled) { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+.step-btn:disabled { opacity: .4; cursor: not-allowed; }
+.step-btn.primary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+.step-btn.primary:hover { background: #388bfd; border-color: #388bfd; }
+.step-counter { font-size: 13px; color: #8b949e; }
+.step-info {
+  background: #1c2d44; border: 1px solid #58a6ff44; border-radius: 8px;
+  padding: 14px 18px; margin-top: 14px; font-size: 14px; color: #c9d1d9; line-height: 1.6; min-height: 60px; transition: all .3s;
+}
+.step-info strong { color: #58a6ff; }
 
-  /* ── Connection box ── */
-  .connection {
-    background: #0c1f14;
-    border: 1px solid #1a3f24;
-    border-left: 4px solid #3fb950;
-    border-radius: 6px;
-    padding: 16px 20px;
-    margin: 18px 0;
-  }
-  .connection-label {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: #3fb950;
-    margin-bottom: 6px;
-  }
+/* ─── Flip Cards ──────────────────────────────────────────────── */
+.flip-cards-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 16px 0; }
+.flip-card { perspective: 1000px; height: 180px; cursor: pointer; }
+.flip-card-inner {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d; transition: transform .5s cubic-bezier(.4,0,.2,1); border-radius: 10px;
+}
+.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+.flip-card-front, .flip-card-back {
+  position: absolute; inset: 0; backface-visibility: hidden; border-radius: 10px;
+  padding: 20px; display: flex; flex-direction: column; justify-content: center;
+}
+.flip-card-front { background: #21262d; border: 1px solid #f85149; align-items: center; text-align: center; }
+.flip-card-front .myth-icon { font-size: 2rem; margin-bottom: 10px; }
+.flip-card-front .myth-label { font-size: 11px; color: #f85149; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+.flip-card-front .myth-text { font-size: 14px; color: #c9d1d9; font-weight: 500; }
+.flip-card-back { background: #1c2d44; border: 1px solid #3fb950; transform: rotateY(180deg); }
+.flip-card-back .truth-label { font-size: 11px; color: #3fb950; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
+.flip-card-back .truth-text { font-size: 13px; color: #c9d1d9; line-height: 1.5; }
+.flip-hint { font-size: 12px; color: #8b949e; text-align: center; margin-bottom: 8px; }
 
-  /* ── Collapsible think boxes ── */
-  details.think {
-    background: #1a1322;
-    border: 1px solid #3d2f5e;
-    border-left: 4px solid #a371f7;
-    border-radius: 6px;
-    margin: 18px 0;
-    overflow: hidden;
-  }
-  details.think summary {
-    padding: 14px 18px;
-    cursor: pointer;
-    font-weight: 600;
-    color: #a371f7;
-    list-style: none;
-    user-select: none;
-    transition: background .15s;
-  }
-  details.think summary::-webkit-details-marker { display: none; }
-  details.think summary:hover { background: #21182e; }
-  details.think[open] summary { border-bottom: 1px solid #3d2f5e; }
-  details.think .think-body {
-    padding: 16px 18px;
-    color: #c9d1d9;
-  }
+/* ─── Trade-off Explorer ──────────────────────────────────────── */
+.tradeoff-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab-btn {
+  padding: 7px 16px; border-radius: 6px; border: 1px solid #30363d; background: #21262d;
+  color: #8b949e; cursor: pointer; font-size: 13px; font-weight: 500; transition: all .2s;
+}
+.tab-btn.active { background: #1c2d44; border-color: #58a6ff; color: #58a6ff; }
+.tab-btn:hover:not(.active) { border-color: #58a6ff44; color: #c9d1d9; }
+.tradeoff-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .tradeoff-grid { grid-template-columns: 1fr; } }
+.pillar-card {
+  background: #21262d; border: 2px solid #30363d; border-radius: 10px; padding: 18px; transition: all .3s;
+}
+.pillar-card.highlighted { border-color: #58a6ff; background: #1c2d44; box-shadow: 0 0 20px rgba(88,166,255,.15); }
+.pillar-card .pillar-name { font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
+.pillar-card .pillar-score { font-size: 12px; color: #8b949e; margin-bottom: 10px; }
+.score-bar { background: #30363d; border-radius: 4px; height: 6px; margin: 4px 0 10px; overflow: hidden; }
+.score-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
+.pillar-card .pillar-desc { font-size: 13px; color: #8b949e; line-height: 1.5; }
+.scenario-label { font-size: 13px; color: #8b949e; margin-bottom: 12px; }
+.tension-note {
+  background: #2d1a1a; border: 1px solid #f8514944; border-radius: 8px;
+  padding: 12px 16px; font-size: 13px; color: #c9d1d9; margin-top: 14px; display: none;
+}
+.tension-note.show { display: block; }
 
-  /* ── Quiz cards ── */
-  .quiz-card {
-    background: #111a22;
-    border: 1px solid #1f3a54;
-    border-left: 4px solid #f0883e;
-    border-radius: 6px;
-    padding: 16px 20px;
-    margin: 18px 0;
-  }
-  .quiz-label {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: #f0883e;
-    margin-bottom: 8px;
-  }
-  .quiz-question { font-weight: 600; margin-bottom: 12px; }
-  .reveal-btn {
-    background: #f0883e22;
-    border: 1px solid #f0883e;
-    color: #f0883e;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: background .2s;
-  }
-  .reveal-btn:hover { background: #f0883e44; }
-  .quiz-answer {
-    display: none;
-    margin-top: 14px;
-    padding: 12px 16px;
-    background: #0d1117;
-    border-radius: 6px;
-    color: #c9d1d9;
-    border: 1px solid #30363d;
-  }
+/* ─── Timeline ────────────────────────────────────────────────── */
+.timeline { position: relative; padding-left: 30px; margin: 16px 0; }
+.timeline::before {
+  content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(180deg,#58a6ff,#3fb950,#d29922);
+}
+.timeline-item {
+  position: relative; margin-bottom: 24px;
+  opacity: 0; transform: translateX(-10px); transition: opacity .4s ease, transform .4s ease;
+}
+.timeline-item.visible { opacity: 1; transform: translateX(0); }
+.timeline-dot {
+  position: absolute; left: -26px; top: 6px; width: 14px; height: 14px;
+  border-radius: 50%; border: 2px solid #58a6ff; background: #0d1117; transition: background .3s;
+}
+.timeline-item:hover .timeline-dot { background: #58a6ff; }
+.timeline-item h4 { font-size: .95rem; color: #e6edf3; margin-bottom: 4px; }
+.timeline-item p { font-size: 13px; color: #8b949e; }
 
-  /* ── Takeaways ── */
-  .takeaways li {
-    padding: 8px 0;
-    border-bottom: 1px solid #21262d;
-  }
-  .takeaways li:last-child { border-bottom: none; }
-  .takeaways li::marker { color: #3fb950; }
+/* ─── Takeaway Cards ──────────────────────────────────────────── */
+.takeaway-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 500px) { .takeaway-cards { grid-template-columns: 1fr; } }
+.takeaway-card {
+  background: #21262d; border: 1px solid #30363d; border-radius: 8px; padding: 16px;
+  opacity: 0; transform: translateY(10px); transition: opacity .4s ease, transform .4s ease, border-color .2s;
+}
+.takeaway-card.visible { opacity: 1; transform: translateY(0); }
+.takeaway-card:hover { border-color: #58a6ff44; }
+.takeaway-card .tk-number { font-size: 11px; color: #8b949e; font-weight: 600; letter-spacing: .1em; margin-bottom: 6px; }
+.takeaway-card .tk-title { font-size: .95rem; font-weight: 600; color: #58a6ff; margin-bottom: 4px; }
+.takeaway-card .tk-body { font-size: 13px; color: #8b949e; line-height: 1.5; }
 
-  /* ── Tomorrow preview ── */
-  .tomorrow {
-    background: linear-gradient(135deg, #0d2137 0%, #0c1f14 100%);
-    border: 1px solid #30363d;
-    border-radius: 10px;
-    padding: 24px 28px;
-    text-align: center;
-    margin-top: 32px;
-  }
-  .tomorrow h2 { border-bottom: none; margin-bottom: 10px; }
-  .tomorrow p { color: #8b949e; margin: 0; }
-  .tomorrow strong { color: #3fb950; }
+/* ─── Details / Quiz ──────────────────────────────────────────── */
+details { background: #21262d; border: 1px solid #30363d; border-radius: 8px; margin: 12px 0; transition: border-color .2s; }
+details[open] { border-color: #58a6ff44; }
+summary {
+  padding: 14px 18px; cursor: pointer; font-size: 14px; font-weight: 500; color: #c9d1d9;
+  list-style: none; display: flex; justify-content: space-between; align-items: center;
+}
+summary::after { content: '▶'; font-size: 10px; color: #8b949e; transition: transform .2s; }
+details[open] summary::after { transform: rotate(90deg); }
+summary::-webkit-details-marker { display: none; }
+.details-body { padding: 0 18px 16px; font-size: 14px; color: #c9d1d9; line-height: 1.7; }
+.details-body p { margin-bottom: 10px; }
 
-  /* ── Footer nav repeat ── */
-  .footer-nav { margin-top: 32px; }
+/* ─── Quiz ────────────────────────────────────────────────────── */
+.quiz-wrap { background: #21262d; border: 1px solid #30363d; border-radius: 8px; padding: 18px; margin: 12px 0; }
+.quiz-q { font-size: 14px; font-weight: 600; color: #c9d1d9; margin-bottom: 12px; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.quiz-opt {
+  padding: 10px 14px; background: #161b22; border: 1px solid #30363d; border-radius: 6px;
+  cursor: pointer; font-size: 13px; color: #c9d1d9; transition: all .2s; text-align: left;
+}
+.quiz-opt:hover:not(.locked) { border-color: #58a6ff44; background: #1c2d44; }
+.quiz-opt.correct { border-color: #3fb950; background: #1a2d1a; color: #3fb950; }
+.quiz-opt.wrong { border-color: #f85149; background: #2d1a1a; color: #f85149; }
+.quiz-opt.locked { cursor: default; }
+.quiz-reveal { font-size: 13px; color: #8b949e; padding: 10px 0 0; display: none; }
 
-  /* ── Responsive ── */
-  @media (max-width: 600px) {
-    .card { padding: 18px 16px; }
-    .nav-links { flex-direction: column; }
-    .nav-links a { text-align: center; }
-  }
+/* ─── Comparison Table ────────────────────────────────────────── */
+.compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+.compare-table th {
+  background: #21262d; color: #8b949e; font-weight: 600; text-transform: uppercase;
+  font-size: 11px; letter-spacing: .08em; padding: 10px 14px; border: 1px solid #30363d; text-align: left;
+}
+.compare-table td { padding: 10px 14px; border: 1px solid #30363d; color: #c9d1d9; vertical-align: top; }
+.compare-table tr:nth-child(even) td { background: #161b22; }
+.compare-table tr:hover td { background: #1c2d4420; }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.pill-green { background: #1a3a1a; color: #3fb950; border: 1px solid #3fb95044; }
+.pill-blue { background: #1c2d44; color: #58a6ff; border: 1px solid #58a6ff44; }
+.pill-yellow { background: #2a2000; color: #d29922; border: 1px solid #d2992244; }
+.pill-red { background: #2d1a1a; color: #f85149; border: 1px solid #f8514944; }
+
+/* ─── Footer ──────────────────────────────────────────────────── */
+.page-footer {
+  max-width: 1100px; margin: 0 auto; padding: 24px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-top: 1px solid #30363d; font-size: 14px;
+}
+.footer-link {
+  color: #58a6ff; text-decoration: none; padding: 8px 16px;
+  border: 1px solid #58a6ff44; border-radius: 6px; transition: all .2s;
+}
+.footer-link:hover { background: #58a6ff; color: #0d1117; }
+.footer-link.disabled { color: #8b949e; border-color: #30363d; pointer-events: none; }
+
+/* ─── Utility ─────────────────────────────────────────────────── */
+ul.feature-list { list-style: none; padding: 0; margin: 12px 0; }
+ul.feature-list li {
+  padding: 8px 0; border-bottom: 1px solid #21262d; font-size: 14px; color: #c9d1d9; display: flex; gap: 10px;
+}
+ul.feature-list li:last-child { border-bottom: none; }
+ul.feature-list li::before { content: '→'; color: #58a6ff; font-weight: 700; flex-shrink: 0; }
+.callout {
+  background: #1c2d44; border-left: 4px solid #58a6ff; border-radius: 0 6px 6px 0;
+  padding: 14px 18px; margin: 16px 0; font-size: 14px; color: #c9d1d9; line-height: 1.6;
+}
+.callout.warn { background: #1c1a0f; border-left-color: #d29922; }
+.callout.danger { background: #2d1a1a; border-left-color: #f85149; }
+.tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.tag { font-size: 12px; padding: 3px 10px; border-radius: 12px; font-weight: 500; }
+.tag-r { background: #1c2d44; color: #58a6ff; border: 1px solid #58a6ff33; }
+.tag-s { background: #1a3a1a; color: #3fb950; border: 1px solid #3fb95033; }
+.tag-m { background: #2a2000; color: #d29922; border: 1px solid #d2992233; }
+blockquote { border-left: 3px solid #58a6ff; padding: 12px 20px; margin: 16px 0; color: #8b949e; font-style: italic; background: #161b22; border-radius: 0 6px 6px 0; }
+
+/* ─── Wild Grid ───────────────────────────────────────────────── */
+.wild-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 14px; margin: 16px 0; }
+.wild-card { background: #21262d; border: 1px solid #30363d; border-radius: 8px; padding: 16px; transition: all .2s; }
+.wild-card:hover { border-color: #58a6ff44; transform: translateY(-2px); }
+.wild-card .system-name { font-weight: 700; color: #58a6ff; margin-bottom: 6px; font-size: .9rem; }
+.wild-card .system-focus { font-size: 12px; color: #d29922; margin-bottom: 6px; }
+.wild-card .system-desc { font-size: 13px; color: #8b949e; line-height: 1.5; }
 </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- Header -->
-  <div class="site-label">📚 DDIA Daily Lesson</div>
-  <h1 class="main-title">Day 1 of 109 — Chapter 1: What is DDIA?</h1>
-  <p class="subtitle">The Three Concerns of Every Data System — Reliability, Scalability, Maintainability</p>
-
-  <!-- Progress bar -->
-  <div class="progress-wrap">
-    <div class="progress-label">
-      <span>Progress</span>
-      <span>1 / 109 (0.9%)</span>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">📚 DDIA</a>
+  <div class="chapter-dropdown">
+    <button class="chapter-btn" onclick="toggleChapterMenu()">Chapters ▾</button>
+    <div class="chapter-menu" id="chapterMenu">
+      <a href="day-01.html" class="current">Ch 1 — Reliable, Scalable, Maintainable</a>
+      <a href="#" style="opacity:.5;pointer-events:none">Ch 2 — Data Models (Day 7)</a>
+      <a href="#" style="opacity:.5;pointer-events:none">Ch 3 — Storage &amp; Retrieval (Day 15)</a>
+      <a href="#" style="opacity:.5;pointer-events:none">Ch 4 — Encoding (Day 26)</a>
+      <a href="#" style="opacity:.5;pointer-events:none">Ch 5 — Replication (Day 32)</a>
+      <a href="#" style="opacity:.5;pointer-events:none">Ch 6 — Partitioning (Day 44)</a>
+      <a href="#" style="opacity:.5;pointer-events:none">Ch 7 — Transactions (Day 50)</a>
+      <a href="#" style="opacity:.5;pointer-events:none">Ch 8 — Distributed Systems (Day 61)</a>
+      <a href="#" style="opacity:.5;pointer-events:none">Ch 9 — Consistency (Day 69)</a>
+      <a href="#" style="opacity:.5;pointer-events:none">Ch 10 — Batch Processing (Day 80)</a>
+      <a href="#" style="opacity:.5;pointer-events:none">Ch 11 — Stream Processing (Day 90)</a>
+      <a href="#" style="opacity:.5;pointer-events:none">Ch 12 — The Future (Day 100)</a>
     </div>
-    <div class="progress-bar-track">
-      <div class="progress-bar-fill" id="progressFill"></div>
-    </div>
   </div>
+  <span class="nav-spacer"></span>
+  <a class="nav-search" href="index.html#search" title="Search lessons">🔍</a>
+</nav>
 
-  <!-- Navigation -->
-  <div class="nav-links">
-    <a class="disabled" href="#">← Previous Lesson</a>
-    <a href="day-02.html">Next Lesson →</a>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SECTION 1 — Opening Hook
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <h2>🌩️ Opening Hook: The $150 Million Outage</h2>
-    <p>On August 31, 2019, a single software bug in a data pipeline at an e-commerce company caused a cascading failure that took down checkout for 45 minutes during a peak shopping period. The cost? Over $150 million in lost sales. The culprit wasn't a hacker, a server fire, or even a power outage. It was bad software that failed to handle a perfectly normal situation: a slight increase in traffic.</p>
-    <p>Here's the uncomfortable truth: <strong>almost every major outage in the modern era is not caused by hardware failing, but by data systems failing.</strong> Twitter going down. Facebook losing 6 hours. AWS taking out Netflix. These aren't hardware problems — they're architecture problems. They're problems that a book called <em>Designing Data-Intensive Applications</em> was written to help you solve.</p>
-    <p>So what exactly is a "data-intensive" application, and why do they fail in such spectacular ways?</p>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SECTION 2 — What is DDIA?
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <h2>📖 What is DDIA and Why Does It Exist?</h2>
-    <p><em>Designing Data-Intensive Applications</em> by Martin Kleppmann (published 2017, still the gold standard) is not a book about databases. It's a book about <strong>thinking clearly about data systems</strong>. The distinction matters enormously.</p>
-    <p>Kleppmann draws a sharp line between two types of applications:</p>
-    <h3>Compute-Intensive Applications</h3>
-    <p>These are bottlenecked by <strong>CPU power</strong>. Video encoding, machine learning training, scientific simulations — the limiting factor is raw computational throughput. Throw more processors at it and it gets faster.</p>
-    <h3>Data-Intensive Applications</h3>
-    <p>These are bottlenecked by <strong>data</strong> — its volume, complexity, and the speed at which it changes. The problem is rarely CPU speed. The problems are: How do you store terabytes reliably? How do you query it quickly? How do you ensure that two users updating the same record simultaneously don't corrupt each other's changes? How do you keep serving reads when a server dies at 3 AM?</p>
-    <div class="insight">
-      <div class="insight-label">💡 Key Insight</div>
-      <p>Most applications you'll build professionally — web apps, mobile backends, analytics pipelines, microservices — are data-intensive, not compute-intensive. DDIA teaches you to think like an architect who understands the <em>fundamental guarantees</em> of the tools they use, rather than someone who blindly reaches for the latest database buzzword.</p>
-    </div>
-    <p>The book covers the internals of databases, messaging systems, batch and stream processing, and distributed systems — not to make you implement them from scratch, but so you understand their <em>failure modes</em>, <em>trade-offs</em>, and <em>guarantees</em> deeply enough to make sound architectural decisions.</p>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SECTION 3 — The Three Concerns
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <h2>🔺 The Three Concerns: The Heart of Chapter 1</h2>
-    <p>Kleppmann opens with a deceptively simple claim: when designing data systems, there are three concerns that come up again and again, in every project, at every scale. They are:</p>
-    <ol>
-      <li><strong>Reliability</strong> — The system should work correctly even when things go wrong.</li>
-      <li><strong>Scalability</strong> — As the system grows, there should be reasonable ways to deal with that growth.</li>
-      <li><strong>Maintainability</strong> — Many different people should be able to work on the system productively.</li>
-    </ol>
-    <p>These three sound obvious. They're not. Most engineering disasters can be traced back to an architect who prioritized one at the expense of the others, or who failed to understand what "reliability" actually means in a distributed system. Let's break each one down.</p>
-
-    <!-- ── RELIABILITY ── -->
-    <h3>1. Reliability</h3>
-    <p>Reliability means the system does what it's supposed to do — correctly, consistently, and at the level of performance the user expects — <em>even when things go wrong</em>. That last clause is the hard part.</p>
-    <p>The things that can go wrong are called <strong>faults</strong>. A system that anticipates faults and can cope with them is called <strong>fault-tolerant</strong> or <strong>resilient</strong>.</p>
-    <div class="insight">
-      <div class="insight-label">💡 Key Insight</div>
-      <p>Kleppmann makes a crucial distinction: <strong>fault ≠ failure</strong>. A fault is when one component of the system deviates from its spec. A failure is when the whole system stops providing the required service. Fault tolerance means building systems where individual faults don't escalate into full failures. Netflix's famous Chaos Monkey — software that randomly kills servers in production — embodies this philosophy.</p>
-    </div>
-    <p>Faults come in three flavors: <strong>hardware faults</strong> (disk crashes, RAM corruption, power outages), <strong>software errors</strong> (bugs, cascading failures, runaway processes), and <strong>human errors</strong> (misconfiguration, wrong deployments — the most common cause of outages by far).</p>
-
-    <!-- ── SCALABILITY ── -->
-    <h3>2. Scalability</h3>
-    <p>Scalability isn't about being big. It's about having a <em>plan</em> for when you get bigger. The question Kleppmann asks is deceptively precise: <strong>"If the system grows in a particular way, what are our options for coping with that growth?"</strong></p>
-    <p>Notice he says "grows in a particular way" — not just "grows." This matters because different growth patterns demand different solutions. A system can be:</p>
-    <ul>
-      <li><strong>Write-heavy</strong> (a sensor network writing millions of events/second)</li>
-      <li><strong>Read-heavy</strong> (a news website serving millions of readers)</li>
-      <li><strong>Compute-heavy</strong> (a recommendation engine)</li>
-      <li><strong>All of the above simultaneously</strong> (Twitter)</li>
-    </ul>
-    <p>To reason about scalability, you need two concepts: <strong>load parameters</strong> (the numbers that describe your current load — requests per second, ratio of reads to writes, active users) and <strong>performance metrics</strong> (how performance changes as load grows). We'll explore both deeply in Day 4.</p>
-
-    <!-- ── MAINTAINABILITY ── -->
-    <h3>3. Maintainability</h3>
-    <p>Here's a sobering fact: the majority of the cost of software is not in its initial development — it's in <em>ongoing maintenance</em>. Fixing bugs, adapting to new requirements, repaying technical debt, keeping the lights on. Kleppmann breaks maintainability into three sub-concerns:</p>
-    <ul>
-      <li><strong>Operability:</strong> Making it easy for operations teams to keep the system running smoothly. Good observability, clear monitoring, smooth deployment.</li>
-      <li><strong>Simplicity:</strong> Making it easy for new engineers to understand the system. Complexity is the silent killer — it hides bugs, slows teams, and makes change dangerous.</li>
-      <li><strong>Evolvability:</strong> Making it easy to change the system in the future as requirements evolve. Also called <em>extensibility</em>, <em>modifiability</em>, or <em>plasticity</em>.</li>
-    </ul>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SECTION 4 — Analogies
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <h2>🧠 Intuitive Analogies</h2>
-
-    <h3>The Hospital Analogy for Reliability</h3>
-    <p>Think of a hospital. A reliable hospital doesn't mean "nothing ever goes wrong." Nurses get sick, equipment breaks, power flickers. A reliable hospital means that when any one of those things happens, <em>patients are still cared for</em>. They have backup generators, on-call staff, redundant medical supplies. The hospital is designed to stay functional <em>in the presence of faults</em>. Your data system should be the same.</p>
-
-    <h3>The Restaurant Analogy for Scalability</h3>
-    <p>Imagine a tiny breakfast café that serves 30 customers perfectly. Then it gets reviewed by a food blogger and suddenly 3,000 people show up. The café can't just "work harder" — it needs a fundamentally different approach: multiple chefs, table management software, maybe a second location. Scalability is about designing for the next 10x, 100x, and 1000x of growth — ideally before you desperately need it.</p>
-
-    <h3>The Codebase vs. Franchise Analogy for Maintainability</h3>
-    <p>A poorly maintained system is like a restaurant where the head chef memorized all the recipes and quit. A maintainable system is a franchise: the recipes are written down, standardized, and teachable. Any competent chef can walk in, read the manual, and make the food correctly. Maintainability is about writing systems that your future teammates — and future you — can understand and change safely.</p>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SECTION 5 — Real-World Examples
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <h2>🏢 Real-World Examples</h2>
-
-    <h3>Amazon: All Three at Once</h3>
-    <p>Amazon's infrastructure is arguably the most studied data system in history. Their 2006 paper on Dynamo DB was partly motivated by reliability requirements: every node failure during holiday shopping season could mean millions in lost revenue. They chose availability over consistency (we'll revisit this in Chapter 9 — CAP theorem). Amazon's internal study found that every 100ms of latency cost them 1% in sales. That's a scalability measurement turned into a business requirement.</p>
-
-    <h3>Twitter's Fanout Problem</h3>
-    <p>When you tweet, how does every one of your followers see it instantly in their feed? Early Twitter computed your feed on-the-fly by querying everyone you follow — this was simple but broke under load. Then they switched to <em>fanout-on-write</em>: when you tweet, immediately write a copy to every follower's timeline cache. Fast reads, but writing one tweet for a celebrity with 100M followers means 100M writes. They eventually built a hybrid. This is the essence of scalability trade-offs — there's rarely a free lunch.</p>
-
-    <h3>Netflix: Chaos Engineering for Reliability</h3>
-    <p>Netflix invented <em>Chaos Engineering</em> — deliberately injecting failures into production systems to ensure resilience. Their Simian Army tools (Chaos Monkey, Chaos Gorilla, Chaos Kong) kill individual instances, entire availability zones, and entire AWS regions respectively. They do this because they'd rather discover failure modes under controlled conditions than be surprised during a Super Bowl stream. This is reliability thinking at industrial scale.</p>
-
-    <h3>Google Bigtable & Spanner: Maintainability at Scale</h3>
-    <p>Google's internal systems are operated by thousands of engineers. Their systems are designed with operability in mind — automatic sharding, self-healing replication, rich observability. When Google open-sourced design papers for Bigtable and Spanner, it wasn't charity — it was evidence that principled data system design has durable, transferable value.</p>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SECTION 6 — Deep Dive
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <h2>🔬 Deep Dive: The Trade-offs Nobody Tells You</h2>
-
-    <h3>These Three Concerns Are Often in Tension</h3>
-    <p>Reliability costs money and complexity. Adding redundancy, replication, and failover mechanisms makes a system more complex — which hurts maintainability. Making a system scale horizontally across many nodes introduces distributed systems problems — which hurts reliability. The art of data system design is <strong>navigating these tensions intelligently</strong>.</p>
-
-    <div class="code-block">
-Simple example of the tension:
-─────────────────────────────────────
-Single database server:
-  ✅ Simple to understand (maintainability)
-  ❌ If it dies, everything dies (reliability)
-  ❌ Can't scale beyond one machine (scalability)
-
-Replicated database cluster:
-  ✅ Survives individual node failures (reliability)
-  ✅ Read queries can scale horizontally (scalability)
-  ❌ Now you have replication lag, split-brain risks,
-     complex failover logic (maintainability ↓)
-─────────────────────────────────────</div>
-
-    <h3>The Hardest Problems Are Social, Not Technical</h3>
-    <p>Kleppmann notes that many of the hardest data system challenges are organizational. Who decides what "reliable enough" means? Who is on-call at 3 AM? How do you coordinate schema changes across 50 microservices owned by 10 teams? Maintainability is as much about team dynamics as it is about code quality.</p>
-
-    <h3>Functional vs. Non-Functional Requirements</h3>
-    <p>Reliability, scalability, and maintainability are all <strong>non-functional requirements</strong> — they describe <em>how</em> a system works, not <em>what</em> it does. Functional requirements are what most product conversations focus on ("users should be able to search for products"). Non-functional requirements are often what actually determine whether a system succeeds or fails in production. This book is almost entirely about non-functional requirements.</p>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SECTION 7 — Misconceptions
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <h2>⚠️ Common Misconceptions</h2>
-
-    <h3>Misconception 1: "We'll add reliability later."</h3>
-    <p>Reliability is not a feature you bolt on. It's an architectural property that emerges from decisions made early: choice of storage engine, replication strategy, error handling patterns, data model. Retrofitting reliability into a system that wasn't designed for it is one of the most expensive and painful engineering tasks imaginable. The time to think about fault tolerance is before the first line of production code is written.</p>
-
-    <h3>Misconception 2: "Scalability means making it work for millions of users."</h3>
-    <p>Scalability is context-specific. A system that needs to handle 10x more read traffic is a fundamentally different problem from one that needs to handle 10x more write traffic, or 10x more data volume. "Scalable" without context is meaningless. You need to know your <em>specific load parameters</em> and design for those. We'll formalize this with the concept of load parameters and performance percentiles in Day 4.</p>
-
-    <h3>Misconception 3: "Our system is maintainable because we have good variable names."</h3>
-    <p>Maintainability goes far beyond code quality. It encompasses: Is there a runbook for operations? Can you deploy without downtime? Can you roll back a bad release in minutes? Can a new engineer understand the data model in a day? Is there good monitoring and alerting? A beautifully written codebase that's impossible to deploy safely is not maintainable.</p>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SECTION 8 — Think Questions
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <h2>🤔 Pause and Think</h2>
-
-    <details class="think">
-      <summary>🤔 Think #1: Where do you stand on the spectrum?</summary>
-      <div class="think-body">
-        <p>Think of a system you've worked on or used frequently. Was it compute-intensive or data-intensive? What were its actual bottlenecks — CPU, storage, network, data complexity? How did those bottlenecks manifest as real problems users experienced?</p>
-        <p><em>Example reflection:</em> A ride-sharing app is data-intensive — the challenges are matching drivers to riders in real-time (latency), storing millions of trip records (storage), handling driver location updates 4x per second (write throughput), and ensuring pricing is consistent even when servers fail mid-trip (reliability). CPU is rarely the bottleneck.</p>
+<!-- PAGE WRAPPER -->
+<div class="page-wrapper">
+  <header class="page-header">
+    <div class="day-badge">✦ Day 1 of 109 &nbsp;|&nbsp; Chapter 1</div>
+    <h1 class="page-title">What Is DDIA?<br>The Three Pillars of Data Systems</h1>
+    <p class="page-chapter">Chapter 1 — Reliable, Scalable, Maintainable Applications</p>
+    <div class="progress-container">
+      <div class="progress-labels">
+        <span>Your Progress</span>
+        <span>1 / 109 sessions</span>
       </div>
-    </details>
-
-    <details class="think">
-      <summary>🤔 Think #2: The Tension in Practice</summary>
-      <div class="think-body">
-        <p>Can you think of a real-world system where improving reliability made it harder to maintain? Where making something more scalable made it harder to reason about? The three concerns are often in direct tension with each other.</p>
-        <p><em>Hint:</em> Consider what happens when a startup that started with a single Postgres database decides to add read replicas, then sharding, then a caching layer. Each step adds reliability and scalability. Each step also adds operational complexity. At what point does the complexity start costing more than it saves?</p>
-      </div>
-    </details>
-
-    <details class="think">
-      <summary>🤔 Think #3: Reliability vs. Fault-Tolerance</summary>
-      <div class="think-body">
-        <p>Kleppmann says it's usually better to <em>tolerate</em> faults than to <em>prevent</em> them (with certain exceptions, like security vulnerabilities). Why might this be? What would it even mean to "prevent" a hardware fault?</p>
-        <p><em>Insight:</em> You can't prevent a hard drive from dying — it's a physical certainty over time. But you can design your system so that when a drive dies, no data is lost and the system keeps running. Prevention focuses on eliminating individual failure causes; tolerance focuses on designing away the impact of failure causes. Tolerance tends to be more achievable and more robust.</p>
-      </div>
-    </details>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SECTION 9 — Quick Check Quizzes
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <h2>⚡ Quick Check</h2>
-
-    <div class="quiz-card">
-      <div class="quiz-label">⚡ Quick Check #1</div>
-      <p class="quiz-question">What is the difference between a <strong>fault</strong> and a <strong>failure</strong> in Kleppmann's terminology?</p>
-      <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
-      <div class="quiz-answer">
-        <p>A <strong>fault</strong> is when one component of a system deviates from its spec — a single disk corrupts data, a single node becomes unreachable, a single process crashes. A <strong>failure</strong> is when the <em>entire system</em> stops providing its required service to users.</p>
-        <p>Fault-tolerant systems are designed so that individual faults do not escalate into system-wide failures. The goal is to prevent faults from becoming failures — not to prevent faults entirely (which is often impossible).</p>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
       </div>
     </div>
+  </header>
 
-    <div class="quiz-card">
-      <div class="quiz-label">⚡ Quick Check #2</div>
-      <p class="quiz-question">Which of the three concerns (Reliability, Scalability, Maintainability) does this describe: "We noticed that adding replicas made our monitoring dashboards too complex to understand, and our on-call engineers couldn't tell which alerts were real."</p>
-      <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
-      <div class="quiz-answer">
-        <p>This is primarily a <strong>Maintainability</strong> problem — specifically the <em>operability</em> sub-concern. Adding replicas improved scalability, but the resulting system became harder for operations teams to manage. The complexity of the monitoring and alerting exceeded the team's ability to interpret it correctly.</p>
-        <p>It also touches on <strong>Reliability</strong> — if engineers can't distinguish real alerts from noise, they'll ignore alerts or respond to the wrong ones, which can lead to actual failures going undetected.</p>
+  <main class="main-col">
+
+    <!-- HOOK -->
+    <section class="section-card card-hook" id="hook">
+      <h2>🚨 The Problem — 3am, and Everything Is on Fire</h2>
+      <p>It's October 4, 2021. Facebook's engineers push a routine BGP configuration update.
+      A bug in the automation propagates. Within minutes, DNS stops resolving <code>facebook.com</code>.
+      WhatsApp goes dark. Instagram vanishes. Over a <strong>billion</strong> people lose access.</p>
+      <p>For <strong>6 hours</strong>, Facebook is unreachable — not just slow, completely unreachable.
+      Their internal tools go down too. Engineers physically drive to data centers to diagnose the outage.
+      Estimated revenue loss: <strong>~$60 million</strong>. Stock drops 4%.</p>
+      <p>The twist: <em>the code was fine. The databases were fine. The application servers were fine.</em>
+      The failure was in the distributed infrastructure that connects it all. This is exactly the domain
+      <em>Designing Data-Intensive Applications</em> teaches you to master.</p>
+      <div class="callout danger">
+        Every major outage you've heard of — AWS us-east-1, Cloudflare, GitHub, Slack — shares a common thread:
+        <strong>systems that worked perfectly in isolation failed catastrophically under real-world conditions.</strong>
+        DDIA is the map of that minefield.
+      </div>
+    </section>
+
+    <!-- THE WHAT -->
+    <section class="section-card" id="the-what">
+      <h2>📖 What Is DDIA?</h2>
+      <p><em>Designing Data-Intensive Applications</em> by Martin Kleppmann (O'Reilly, 2017)
+      is the definitive engineering guide for anyone building systems that store, process, or transmit data at scale.
+      It's not a database textbook — it's a <strong>systems thinking</strong> book that tears open the internals
+      of real production systems and explains every trade-off honestly.</p>
+      <p>The book's central insight: <em>most modern applications are data-intensive, not compute-intensive.</em>
+      The bottleneck isn't CPU cycles — it's how data is stored, retrieved, replicated, and kept consistent
+      across machines that fail in unpredictable ways.</p>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">What "Data-Intensive" means in practice</div>
+        <svg viewBox="0 0 700 210" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="da" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+              <path d="M0,0 L0,7 L7,3.5 z" fill="#30363d"/>
+            </marker>
+          </defs>
+          <!-- Left: Compute-intensive -->
+          <rect x="10" y="40" width="140" height="130" rx="8" fill="#1c2128" stroke="#30363d" stroke-width="1.5"/>
+          <text x="80" y="66" text-anchor="middle" fill="#8b949e" font-size="10" font-family="sans-serif" font-weight="600" letter-spacing="1">COMPUTE-INTENSIVE</text>
+          <text x="80" y="95" text-anchor="middle" fill="#d29922" font-size="14" font-family="sans-serif">ML Training</text>
+          <text x="80" y="116" text-anchor="middle" fill="#8b949e" font-size="12" font-family="sans-serif">Video Encoding</text>
+          <text x="80" y="134" text-anchor="middle" fill="#8b949e" font-size="12" font-family="sans-serif">Crypto Mining</text>
+          <text x="80" y="160" text-anchor="middle" fill="#58a6ff" font-size="11" font-family="sans-serif">CPU is the bottleneck</text>
+
+          <!-- VS -->
+          <text x="195" y="108" text-anchor="middle" fill="#8b949e" font-size="14" font-family="sans-serif" font-style="italic">vs</text>
+
+          <!-- Right: Data-intensive -->
+          <rect x="215" y="10" width="475" height="190" rx="8" fill="#1c2d44" stroke="#58a6ff" stroke-width="1.5"/>
+          <text x="452" y="34" text-anchor="middle" fill="#58a6ff" font-size="11" font-family="sans-serif" font-weight="700" letter-spacing="1">DATA-INTENSIVE (what DDIA covers)</text>
+
+          <!-- 4 sub-nodes -->
+          <rect x="230" y="50" width="100" height="130" rx="6" fill="#21262d" stroke="#30363d"/>
+          <text x="280" y="90" text-anchor="middle" fill="#3fb950" font-size="24">🗄️</text>
+          <text x="280" y="112" text-anchor="middle" fill="#c9d1d9" font-size="11" font-family="sans-serif">Databases</text>
+          <text x="280" y="130" text-anchor="middle" fill="#8b949e" font-size="10" font-family="sans-serif">Store &amp; retrieve</text>
+          <text x="280" y="163" text-anchor="middle" fill="#8b949e" font-size="10" font-family="sans-serif">Ch 3, 7</text>
+
+          <rect x="345" y="50" width="100" height="130" rx="6" fill="#21262d" stroke="#30363d"/>
+          <text x="395" y="90" text-anchor="middle" fill="#d29922" font-size="24">⚡</text>
+          <text x="395" y="112" text-anchor="middle" fill="#c9d1d9" font-size="11" font-family="sans-serif">Caches</text>
+          <text x="395" y="130" text-anchor="middle" fill="#8b949e" font-size="10" font-family="sans-serif">Speed up reads</text>
+          <text x="395" y="163" text-anchor="middle" fill="#8b949e" font-size="10" font-family="sans-serif">Ch 5</text>
+
+          <rect x="460" y="50" width="100" height="130" rx="6" fill="#21262d" stroke="#30363d"/>
+          <text x="510" y="90" text-anchor="middle" fill="#bc8cff" font-size="24">🔍</text>
+          <text x="510" y="112" text-anchor="middle" fill="#c9d1d9" font-size="11" font-family="sans-serif">Search Indexes</text>
+          <text x="510" y="130" text-anchor="middle" fill="#8b949e" font-size="10" font-family="sans-serif">Full-text queries</text>
+          <text x="510" y="163" text-anchor="middle" fill="#8b949e" font-size="10" font-family="sans-serif">Ch 3</text>
+
+          <rect x="575" y="50" width="100" height="130" rx="6" fill="#21262d" stroke="#30363d"/>
+          <text x="625" y="90" text-anchor="middle" fill="#58a6ff" font-size="24">📨</text>
+          <text x="625" y="112" text-anchor="middle" fill="#c9d1d9" font-size="11" font-family="sans-serif">Message Queues</text>
+          <text x="625" y="130" text-anchor="middle" fill="#8b949e" font-size="10" font-family="sans-serif">Async processing</text>
+          <text x="625" y="163" text-anchor="middle" fill="#8b949e" font-size="10" font-family="sans-serif">Ch 11</text>
+
+          <text x="452" y="193" text-anchor="middle" fill="#8b949e" font-size="10" font-family="sans-serif">Data volume, complexity &amp; rate of change are the real bottleneck</text>
+        </svg>
+      </div>
+
+      <h3>The Three Non-Negotiable Concerns</h3>
+      <p>Every chapter, every design decision, every trade-off in DDIA ultimately comes back to three questions:</p>
+      <div class="tag-row">
+        <span class="tag tag-r">🔴 Reliability</span>
+        <span class="tag tag-s">🟢 Scalability</span>
+        <span class="tag tag-m">🟡 Maintainability</span>
+      </div>
+      <p>These aren't buzzwords. They're the three axes on which every data system is evaluated. Understanding
+      them deeply is the difference between an SDE 2 who builds features and a Staff Engineer who shapes
+      system architecture.</p>
+    </section>
+
+    <!-- ANALOGY -->
+    <section class="section-card" id="analogy">
+      <h2>🏙️ The Analogy — Building a City, Not Just a House</h2>
+      <p>Think of your data system as a <strong>city</strong>. Your users are citizens. Their requests
+      are traffic. Your data is infrastructure — roads, pipes, power lines.</p>
+
+      <div class="timeline" id="analogyTimeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <h4>🔴 Reliability → Emergency Services</h4>
+          <p>A city must keep working when earthquakes hit, when a water main bursts, when power fails.
+          You don't hope disasters won't happen — you design redundancy in. Similarly, your system must handle
+          disk failures, network drops, and bad user input <em>gracefully</em>, not catastrophically.
+          The earthquake is inevitable. Your survival is not.</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:#3fb950"></div>
+          <h4>🟢 Scalability → Urban Planning</h4>
+          <p>A city designed for 50,000 residents collapses under 5 million. Traffic jams everywhere.
+          Water pressure drops to zero. Smart urban planners design for growth: zoning, expressways,
+          distributed substations. Your database schema today must survive 10x growth tomorrow.
+          Retrofitting a city's infrastructure is catastrophically expensive — so is rewriting a database schema
+          at scale.</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:#d29922"></div>
+          <h4>🟡 Maintainability → City Renovations</h4>
+          <p>A city with no documentation of its underground pipes becomes a nightmare to upgrade.
+          Breaking open a road to add fiber might cut a gas line no one knew was there.
+          Good systems — like well-governed cities — are designed so that new engineers can understand
+          and modify them without needing to know the entire history of every decision ever made.
+          This is where most long-lived systems quietly die.</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>The trade-off the analogy reveals:</strong> Optimizing purely for scalability
+        (building more highways) can hurt maintainability (now you have 47 interchange configurations to understand).
+        Optimizing for reliability (triple-redundant everything) can kill scalability (coordination overhead
+        grows with every replica). This tension is the entire game. Expert engineers don't solve it —
+        they make deliberate, documented choices about where to accept the cost.
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section-card" id="how-it-works">
+      <h2>⚙️ How a Modern Data System Actually Works</h2>
+      <p>When you think "database", you probably think of one box. But any production system at scale
+      is a <em>composition</em> of multiple specialized tools. Here's the anatomy — and DDIA's teaching
+      plan for each component:</p>
+
+      <!-- ANIMATED ARCHITECTURE DIAGRAM -->
+      <div class="diagram-wrap">
+        <div class="diagram-title">Animated Request Journey Through a Modern Data System</div>
+        <svg id="archDiagram" viewBox="0 0 720 320" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowB" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+              <path d="M0,0 L0,7 L7,3.5 z" fill="#58a6ff"/>
+            </marker>
+            <marker id="arrowG" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+              <path d="M0,0 L0,7 L7,3.5 z" fill="#3fb950"/>
+            </marker>
+            <marker id="arrowP" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+              <path d="M0,0 L0,7 L7,3.5 z" fill="#bc8cff"/>
+            </marker>
+            <marker id="arrowO" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+              <path d="M0,0 L0,7 L7,3.5 z" fill="#d29922"/>
+            </marker>
+          </defs>
+
+          <!-- Client -->
+          <rect x="10" y="130" width="80" height="60" rx="8" fill="#1c2d44" stroke="#58a6ff" stroke-width="2"/>
+          <text x="50" y="158" text-anchor="middle" fill="#58a6ff" font-size="20" font-family="sans-serif">👤</text>
+          <text x="50" y="180" text-anchor="middle" fill="#c9d1d9" font-size="10" font-family="sans-serif" font-weight="600">Client</text>
+
+          <!-- Client → LB -->
+          <line x1="92" y1="160" x2="128" y2="160" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrowB)" class="flow-arrow"/>
+
+          <!-- Load Balancer -->
+          <rect x="130" y="130" width="90" height="60" rx="8" fill="#21262d" stroke="#d29922" stroke-width="1.5"/>
+          <text x="175" y="157" text-anchor="middle" fill="#d29922" font-size="18" font-family="sans-serif">⚖️</text>
+          <text x="175" y="178" text-anchor="middle" fill="#c9d1d9" font-size="10" font-family="sans-serif">Load Balancer</text>
+
+          <!-- LB → App Servers (3 lines) -->
+          <line x1="222" y1="148" x2="258" y2="92" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrowB)" class="flow-arrow"/>
+          <line x1="222" y1="160" x2="258" y2="160" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrowB)" class="flow-arrow-slow"/>
+          <line x1="222" y1="173" x2="258" y2="228" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrowB)" class="flow-arrow"/>
+
+          <!-- App Server 1 -->
+          <rect x="260" y="65" width="90" height="52" rx="7" fill="#21262d" stroke="#3fb950" stroke-width="1.5"/>
+          <text x="305" y="89" text-anchor="middle" fill="#3fb950" font-size="14">⚙️</text>
+          <text x="305" y="107" text-anchor="middle" fill="#c9d1d9" font-size="10" font-family="sans-serif">App Server 1</text>
+
+          <!-- App Server 2 -->
+          <rect x="260" y="134" width="90" height="52" rx="7" fill="#21262d" stroke="#3fb950" stroke-width="1.5"/>
+          <text x="305" y="158" text-anchor="middle" fill="#3fb950" font-size="14">⚙️</text>
+          <text x="305" y="176" text-anchor="middle" fill="#c9d1d9" font-size="10" font-family="sans-serif">App Server 2</text>
+
+          <!-- App Server 3 -->
+          <rect x="260" y="203" width="90" height="52" rx="7" fill="#21262d" stroke="#3fb950" stroke-width="1.5"/>
+          <text x="305" y="227" text-anchor="middle" fill="#3fb950" font-size="14">⚙️</text>
+          <text x="305" y="245" text-anchor="middle" fill="#c9d1d9" font-size="10" font-family="sans-serif">App Server 3</text>
+
+          <!-- App → Cache (check first) -->
+          <line x1="352" y1="155" x2="390" y2="110" stroke="#d29922" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowO)" style="animation:dashFlow 1.2s linear infinite"/>
+          <text x="378" y="140" text-anchor="middle" fill="#8b949e" font-size="9" font-family="sans-serif">check cache</text>
+
+          <!-- Cache -->
+          <rect x="392" y="72" width="90" height="62" rx="8" fill="#2a2000" stroke="#d29922" stroke-width="1.5"/>
+          <text x="437" y="102" text-anchor="middle" fill="#d29922" font-size="20">⚡</text>
+          <text x="437" y="122" text-anchor="middle" fill="#c9d1d9" font-size="10" font-family="sans-serif">Redis Cache</text>
+
+          <!-- App → DB (cache miss) -->
+          <line x1="352" y1="170" x2="390" y2="215" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrowB)" class="flow-arrow-slow"/>
+          <text x="374" y="210" text-anchor="middle" fill="#8b949e" font-size="9" font-family="sans-serif">cache miss</text>
+
+          <!-- Database -->
+          <rect x="392" y="196" width="90" height="62" rx="8" fill="#1c2d44" stroke="#58a6ff" stroke-width="1.5"/>
+          <text x="437" y="224" text-anchor="middle" fill="#58a6ff" font-size="20">🗄️</text>
+          <text x="437" y="248" text-anchor="middle" fill="#c9d1d9" font-size="10" font-family="sans-serif">PostgreSQL</text>
+
+          <!-- DB → Message Queue (async write) -->
+          <line x1="484" y1="220" x2="530" y2="110" stroke="#3fb950" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowG)" style="animation:dashFlow 2s linear infinite"/>
+
+          <!-- Message Queue -->
+          <rect x="532" y="72" width="90" height="62" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.5"/>
+          <text x="577" y="100" text-anchor="middle" fill="#3fb950" font-size="20">📨</text>
+          <text x="577" y="122" text-anchor="middle" fill="#c9d1d9" font-size="10" font-family="sans-serif">Kafka Queue</text>
+
+          <!-- MQ → Worker -->
+          <line x1="624" y1="103" x2="642" y2="103" stroke="#3fb950" stroke-width="2" marker-end="url(#arrowG)" class="flow-arrow"/>
+
+          <!-- Worker -->
+          <rect x="644" y="72" width="70" height="62" rx="8" fill="#21262d" stroke="#30363d" stroke-width="1.5"/>
+          <text x="679" y="100" text-anchor="middle" fill="#8b949e" font-size="20">🔧</text>
+          <text x="679" y="122" text-anchor="middle" fill="#c9d1d9" font-size="10" font-family="sans-serif">Workers</text>
+
+          <!-- DB → Search (CDC) -->
+          <line x1="484" y1="240" x2="530" y2="240" stroke="#bc8cff" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowP)" style="animation:dashFlow 3s linear infinite"/>
+          <text x="507" y="230" text-anchor="middle" fill="#8b949e" font-size="9" font-family="sans-serif">CDC</text>
+
+          <!-- Search Index -->
+          <rect x="532" y="210" width="90" height="62" rx="8" fill="#21262d" stroke="#bc8cff" stroke-width="1.5"/>
+          <text x="577" y="238" text-anchor="middle" fill="#bc8cff" font-size="20">🔍</text>
+          <text x="577" y="258" text-anchor="middle" fill="#c9d1d9" font-size="10" font-family="sans-serif">Elasticsearch</text>
+
+          <!-- Labels -->
+          <text x="50" y="24" text-anchor="middle" fill="#58a6ff" font-size="10" font-family="sans-serif">Sync path</text>
+          <text x="437" y="24" text-anchor="middle" fill="#3fb950" font-size="10" font-family="sans-serif">Async paths</text>
+          <text x="437" y="296" text-anchor="middle" fill="#bc8cff" font-size="10" font-family="sans-serif">Derived data</text>
+          <text x="620" y="296" text-anchor="middle" fill="#d29922" font-size="10" font-family="sans-serif">Eventual consistency zone</text>
+        </svg>
+      </div>
+      <p style="font-size:13px;color:#8b949e;text-align:center;margin-top:-8px">
+        Even this "simple" system has 7 components — each with its own Reliability, Scalability, and Maintainability concerns.
+      </p>
+
+      <!-- STEP-THROUGH -->
+      <h3>Step-Through: What DDIA Teaches You About Each Layer</h3>
+      <p>Click through each component to understand why it exists and what can go wrong:</p>
+
+      <div class="diagram-wrap" style="margin-top:12px">
+        <svg id="stepSvg" viewBox="0 0 720 120" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="sa" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+              <path d="M0,0 L0,7 L7,3.5 z" fill="#30363d"/>
+            </marker>
+          </defs>
+          <!-- 7 step nodes -->
+          <g id="sn0">
+            <rect x="5" y="34" width="82" height="52" rx="6" fill="#21262d" stroke="#30363d" stroke-width="2"/>
+            <text x="46" y="58" text-anchor="middle" fill="#58a6ff" font-size="16">👤</text>
+            <text x="46" y="76" text-anchor="middle" fill="#c9d1d9" font-size="9" font-family="sans-serif">Client</text>
+          </g>
+          <line x1="89" y1="60" x2="106" y2="60" stroke="#30363d" stroke-width="2" marker-end="url(#sa)"/>
+          <g id="sn1">
+            <rect x="108" y="34" width="82" height="52" rx="6" fill="#21262d" stroke="#30363d" stroke-width="2"/>
+            <text x="149" y="58" text-anchor="middle" fill="#d29922" font-size="16">⚖️</text>
+            <text x="149" y="76" text-anchor="middle" fill="#c9d1d9" font-size="9" font-family="sans-serif">Load Balancer</text>
+          </g>
+          <line x1="192" y1="60" x2="209" y2="60" stroke="#30363d" stroke-width="2" marker-end="url(#sa)"/>
+          <g id="sn2">
+            <rect x="211" y="34" width="82" height="52" rx="6" fill="#21262d" stroke="#30363d" stroke-width="2"/>
+            <text x="252" y="58" text-anchor="middle" fill="#3fb950" font-size="16">⚙️</text>
+            <text x="252" y="76" text-anchor="middle" fill="#c9d1d9" font-size="9" font-family="sans-serif">App Server</text>
+          </g>
+          <line x1="295" y1="60" x2="312" y2="60" stroke="#30363d" stroke-width="2" marker-end="url(#sa)"/>
+          <g id="sn3">
+            <rect x="314" y="34" width="82" height="52" rx="6" fill="#21262d" stroke="#30363d" stroke-width="2"/>
+            <text x="355" y="58" text-anchor="middle" fill="#d29922" font-size="16">⚡</text>
+            <text x="355" y="76" text-anchor="middle" fill="#c9d1d9" font-size="9" font-family="sans-serif">Cache</text>
+          </g>
+          <line x1="398" y1="60" x2="415" y2="60" stroke="#30363d" stroke-width="2" marker-end="url(#sa)"/>
+          <g id="sn4">
+            <rect x="417" y="34" width="82" height="52" rx="6" fill="#21262d" stroke="#30363d" stroke-width="2"/>
+            <text x="458" y="58" text-anchor="middle" fill="#58a6ff" font-size="16">🗄️</text>
+            <text x="458" y="76" text-anchor="middle" fill="#c9d1d9" font-size="9" font-family="sans-serif">Database</text>
+          </g>
+          <line x1="501" y1="60" x2="518" y2="60" stroke="#30363d" stroke-width="2" marker-end="url(#sa)"/>
+          <g id="sn5">
+            <rect x="520" y="34" width="82" height="52" rx="6" fill="#21262d" stroke="#30363d" stroke-width="2"/>
+            <text x="561" y="58" text-anchor="middle" fill="#bc8cff" font-size="16">📨</text>
+            <text x="561" y="76" text-anchor="middle" fill="#c9d1d9" font-size="9" font-family="sans-serif">Message Queue</text>
+          </g>
+          <line x1="604" y1="60" x2="621" y2="60" stroke="#30363d" stroke-width="2" marker-end="url(#sa)"/>
+          <g id="sn6">
+            <rect x="623" y="34" width="82" height="52" rx="6" fill="#21262d" stroke="#30363d" stroke-width="2"/>
+            <text x="664" y="58" text-anchor="middle" fill="#8b949e" font-size="16">🔧</text>
+            <text x="664" y="76" text-anchor="middle" fill="#c9d1d9" font-size="9" font-family="sans-serif">Workers</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="step-info" id="stepInfo">
+        <strong>Click "Next Step →" to begin</strong> — learn what DDIA teaches about each layer of a modern data system.
+      </div>
+      <div class="step-controls">
+        <button class="step-btn primary" id="stepNext" onclick="nextStep()">Next Step →</button>
+        <button class="step-btn" id="stepReset" onclick="resetStep()" disabled>Reset</button>
+        <span class="step-counter" id="stepCounter">Step 0 of 7</span>
+      </div>
+    </section>
+
+    <!-- TRADE-OFFS -->
+    <section class="section-card" id="tradeoffs">
+      <h2>⚖️ The Trade-offs — The Eternal Tension</h2>
+      <p>The three pillars aren't free. Every engineering decision allocates your complexity budget
+      across them. Select a scenario to see how priorities shift in real systems:</p>
+
+      <div class="tradeoff-tabs">
+        <button class="tab-btn active" onclick="setScenario(this,'balanced')">Balanced App</button>
+        <button class="tab-btn" onclick="setScenario(this,'startup')">Early Startup</button>
+        <button class="tab-btn" onclick="setScenario(this,'hyperscale')">Hyper-Scale</button>
+        <button class="tab-btn" onclick="setScenario(this,'banking')">Fintech / Bank</button>
+        <button class="tab-btn" onclick="setScenario(this,'analytics')">Analytics</button>
+      </div>
+      <div class="scenario-label" id="scenarioLabel">A typical SaaS app with moderate traffic — the balanced default</div>
+
+      <div class="tradeoff-grid" id="tradeoffGrid">
+        <div class="pillar-card highlighted" id="pillarR">
+          <div class="pillar-name" style="color:#f85149">🔴 Reliability</div>
+          <div class="pillar-score">Priority: <span id="scoreRLabel">High</span></div>
+          <div class="score-bar"><div class="score-fill" id="scoreR" style="width:75%;background:#f85149"></div></div>
+          <div class="pillar-desc" id="descR">Hardware redundancy, data backups, graceful degradation. A single disk failure shouldn't lose user data.</div>
+        </div>
+        <div class="pillar-card" id="pillarS">
+          <div class="pillar-name" style="color:#3fb950">🟢 Scalability</div>
+          <div class="pillar-score">Priority: <span id="scoreSLabel">Medium</span></div>
+          <div class="score-bar"><div class="score-fill" id="scoreS" style="width:55%;background:#3fb950"></div></div>
+          <div class="pillar-desc" id="descS">Horizontal scaling for app servers, vertical for DB. Enough for now, not future-proof.</div>
+        </div>
+        <div class="pillar-card" id="pillarM">
+          <div class="pillar-name" style="color:#d29922">🟡 Maintainability</div>
+          <div class="pillar-score">Priority: <span id="scoreMLabel">Medium</span></div>
+          <div class="score-bar"><div class="score-fill" id="scoreM" style="width:60%;background:#d29922"></div></div>
+          <div class="pillar-desc" id="descM">Good docs, clean APIs, oncall runbooks. New engineers can onboard in two weeks.</div>
+        </div>
+      </div>
+      <div class="tension-note" id="tensionNote"></div>
+
+      <h3>Trade-off Comparison Table</h3>
+      <table class="compare-table">
+        <thead>
+          <tr><th>Pillar</th><th>You Gain</th><th>You Pay</th><th>Key Chapters</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="pill pill-red">Reliability</span></td>
+            <td>Data safety, uptime, user trust</td>
+            <td>Complexity, cost, latency (consensus overhead)</td>
+            <td>Ch 1, 7, 8, 9</td>
+          </tr>
+          <tr>
+            <td><span class="pill pill-green">Scalability</span></td>
+            <td>Handle more load, lower latency</td>
+            <td>Consistency challenges, more moving parts</td>
+            <td>Ch 1, 5, 6, 10, 11</td>
+          </tr>
+          <tr>
+            <td><span class="pill pill-yellow">Maintainability</span></td>
+            <td>Faster iteration, fewer outages</td>
+            <td>Upfront design time, potential perf cost</td>
+            <td>Ch 1, 2, 3, 4</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- IN THE WILD -->
+    <section class="section-card" id="in-the-wild">
+      <h2>🌍 In the Wild — Real Systems, Real Trade-offs</h2>
+      <p>Every major system you've used is a deliberate set of choices across these three pillars:</p>
+      <div class="wild-grid">
+        <div class="wild-card">
+          <div class="system-name">Amazon DynamoDB</div>
+          <div class="system-focus">Scalability Maximalist</div>
+          <div class="system-desc">Eventual consistency by default → single-digit millisecond latency at any scale. Trades Reliability nuance for Scalability dominance.</div>
+        </div>
+        <div class="wild-card">
+          <div class="system-name">Google Spanner</div>
+          <div class="system-focus">Reliability + Scalability</div>
+          <div class="system-desc">Strong consistency across global DCs using atomic clocks (TrueTime). Pays with higher internal complexity and latency vs. DynamoDB.</div>
+        </div>
+        <div class="wild-card">
+          <div class="system-name">Apache Kafka</div>
+          <div class="system-focus">Scalability + Maintainability</div>
+          <div class="system-desc">Decouples producers from consumers via logs. One topic serves 50 consumers. System grows in one place — massive maintainability win.</div>
+        </div>
+        <div class="wild-card">
+          <div class="system-name">PostgreSQL</div>
+          <div class="system-focus">Reliability Champion</div>
+          <div class="system-desc">ACID, WAL crash recovery, strong consistency. Goto when "wrong data = people get hurt." Horizontal scaling requires add-ons.</div>
+        </div>
+        <div class="wild-card">
+          <div class="system-name">Cassandra</div>
+          <div class="system-focus">Scalability Maximalist</div>
+          <div class="system-desc">No SPOF. Linear write scalability. Netflix uses it for viewing history — OK if you see "last watched" 1 second late.</div>
+        </div>
+        <div class="wild-card">
+          <div class="system-name">Elasticsearch</div>
+          <div class="system-focus">Specialized Scalability</div>
+          <div class="system-desc">Full-text search at scale. Not a source of truth — a derived view. Avoids overloading your primary DB with search queries.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SDE 2 LENS -->
+    <section class="section-card card-sde2" id="sde2-lens">
+      <h2>🔭 The SDE 2 Lens — You've Seen This Already</h2>
+      <p>You've been working with these systems every day. DDIA gives you the vocabulary and
+      mental model to understand <em>why</em> things work the way they do — and why they fail.</p>
+      <ul class="feature-list">
+        <li><strong>That time your API was slow at peak hours</strong> — you added a cache. That's a Scalability fix. But now your cache returns stale data — that's the Reliability cost you just accepted. DDIA gives you the framework to reason about this trade-off explicitly, not accidentally.</li>
+        <li><strong>That 2am on-call page</strong> because the database disk filled up — a Reliability failure that started as a Scalability planning gap. DDIA Ch 1 will teach you to talk about these as load parameters, not surprises.</li>
+        <li><strong>That legacy service no one wants to touch</strong> — no tests, no docs, mysterious side effects. DDIA calls this "accidental complexity" — a Maintainability failure that accumulated over years of neglect.</li>
+        <li><strong>Your microservices making N+1 calls</strong> to each other — this is a data model problem (Ch 2-3) disguised as a performance problem. The fix isn't a cache — it's rethinking the data model.</li>
+        <li><strong>That "eventual consistency" bug</strong> where users write data and can't read it back — Chapters 5 and 9 will make this crystal clear and give you six different strategies to address it.</li>
+      </ul>
+    </section>
+
+    <!-- INTERVIEW PLAYBOOK -->
+    <section class="section-card card-interview" id="system-design">
+      <h2>🎯 System Design Interview Playbook</h2>
+      <h3>When this comes up</h3>
+      <p>Every system design interview starts here. Before drawing a single box, interviewers are evaluating
+      whether you instinctively think in terms of these three pillars. Questions: "Design Twitter",
+      "Design a URL shortener", "Design a distributed cache", "Design a notification system".</p>
+
+      <h3>Your opening move (say this)</h3>
+      <ul class="feature-list">
+        <li>"Before I start designing, I want to clarify requirements across three dimensions: reliability, scalability, and maintainability."</li>
+        <li>"What's the expected scale — requests per second, data volume, growth rate over 5 years?"</li>
+        <li>"What's the consistency requirement — eventual or strong? Can users tolerate seeing stale data?"</li>
+        <li>"What's the failure tolerance — how much data loss is acceptable (RPO)? How long can we be down (RTO)?"</li>
+        <li>"Who's building this — 3 engineers or 50? Maintainability cost is paid in engineering hours."</li>
+      </ul>
+
+      <h3>The trade-off to articulate</h3>
+      <div class="callout warn">
+        "Reliability, scalability, and maintainability often pull in opposite directions.
+        My design will make explicit trade-offs — I want to understand which dimension to optimize for."
+      </div>
+
+      <h3>Common candidate mistake</h3>
+      <p>Jumping straight to the solution without framing the three concerns first.
+      FAANG interviewers specifically look for whether you naturally decompose problems this way.
+      Skipping it signals junior thinking — even if your eventual design is correct.</p>
+
+      <h3>Power move that impresses</h3>
+      <div class="callout">
+        After establishing requirements: <em>"Given your scale constraints, I'll design for scalability as
+        the primary concern, accepting eventual consistency — we can tighten that later as the product matures."</em>
+        This shows you understand system design is about <em>deliberate</em> trade-offs, not finding a perfect solution.
+        Interviewers love engineers who name the cost of their choices.
+      </div>
+    </section>
+
+    <!-- MISCONCEPTIONS -->
+    <section class="section-card" id="misconceptions">
+      <h2>🃏 Common Misconceptions — Click to Flip</h2>
+      <p class="flip-hint">Click any card to reveal the truth ↓</p>
+      <div class="flip-cards-row">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="myth-icon">💭</div>
+              <div class="myth-label">Myth</div>
+              <div class="myth-text">"Highly scalable = automatically reliable"</div>
+            </div>
+            <div class="flip-card-back">
+              <div class="truth-label">Reality</div>
+              <div class="truth-text">Scaling adds components; more components = more failure points. Cassandra is extremely scalable but has no ACID guarantees. Reliability requires deliberate redundancy, consensus, and failure detection — none of which come free.</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="myth-icon">💭</div>
+              <div class="myth-label">Myth</div>
+              <div class="myth-text">"NoSQL is more scalable than SQL"</div>
+            </div>
+            <div class="flip-card-back">
+              <div class="truth-label">Reality</div>
+              <div class="truth-text">CockroachDB, Spanner, and Citus scale horizontally with full SQL. Many NoSQL systems have serious scale limits. It's data model and access patterns that drive scalability decisions — not the SQL/NoSQL label.</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="myth-icon">💭</div>
+              <div class="myth-label">Myth</div>
+              <div class="myth-text">"Maintainability = writing good comments"</div>
+            </div>
+            <div class="flip-card-back">
+              <div class="truth-label">Reality</div>
+              <div class="truth-text">DDIA defines maintainability as Operability (easy to run), Simplicity (easy to understand), and Evolvability (easy to change). Comments are 0.1% of it. The rest is design decisions made upfront — long before anyone writes a comment.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE ZONE -->
+    <section class="section-card" id="interactive">
+      <h2>🤔 Pause and Think</h2>
+
+      <details>
+        <summary>🤔 Instagram shows follower counts 1 second stale. Is that a Reliability failure?</summary>
+        <div class="details-body">
+          <p><strong>No — it's a deliberate Scalability design decision.</strong></p>
+          <p>Instagram chose eventual consistency for social counts because strong consistency at their scale (2B users) would require coordinating across millions of servers on every read — destroying their latency.</p>
+          <p>A Reliability failure would be: follower count shows 0 for everyone, or data is permanently lost. Stale-but-eventually-correct is a deliberate trade-off the business accepted.</p>
+          <p>This is the DDIA way of thinking: distinguish between <em>accidental failures</em> (bugs, hardware faults) and <em>deliberate design choices</em> made under scale constraints. Both look like "incorrect behavior" to the user, but they have completely different fixes.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>🤔 Your startup has 1,000 users. A senior engineer says "we need microservices for scalability." Correct?</summary>
+        <div class="details-body">
+          <p><strong>Almost certainly premature — DDIA would call it accidental complexity.</strong></p>
+          <p>At 1,000 users, a Rails monolith on a decent server handles 10,000+ req/s. You don't have a scalability problem. Microservices impose huge Maintainability costs: distributed tracing, service discovery, API versioning, complex deployments, network latency between services.</p>
+          <p>You'd be paying massive Maintainability costs to solve a Scalability problem that doesn't yet exist. DDIA specifically warns: "Scalability is not a one-dimensional label. It's meaningless to say 'X is scalable' without specifying the load you're trying to handle."</p>
+          <p><strong>The right move:</strong> Add indexes. Profile your DB queries. Extract services only when you can measure a specific, quantified bottleneck that requires it.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>🤔 What's the difference between "reliable" and "available"?</summary>
+        <div class="details-body">
+          <p><strong>Availability</strong> is a percentage — the fraction of time a system is up. A system can be "99.9% available" and still be unreliable: it might corrupt data silently, return wrong results, or fail in ways that corrupt user state.</p>
+          <p><strong>Reliability</strong> is broader: the system works <em>correctly</em> even when things go wrong — hardware faults without data loss, software bugs without corrupting state, human errors without catastrophe.</p>
+          <p>Example: A database that's available 100% of the time but silently drops writes under load is highly available but completely unreliable. DDIA focuses on reliability as the more fundamental property — availability is just one dimension of it.</p>
+        </div>
+      </details>
+
+      <h3 style="margin-top:24px">⚡ Quick Check</h3>
+      <div class="quiz-wrap">
+        <div class="quiz-q">Which is primarily a Maintainability concern?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="checkAnswer(this,false)">A) Your database disk fills up and crashes</button>
+          <button class="quiz-opt" onclick="checkAnswer(this,false)">B) Your system can't handle 10× its current traffic</button>
+          <button class="quiz-opt" onclick="checkAnswer(this,true)">C) New engineers take 3 months to confidently make changes</button>
+          <button class="quiz-opt" onclick="checkAnswer(this,false)">D) A network partition causes 500 errors for 5 minutes</button>
+        </div>
+        <div class="quiz-reveal" id="quizReveal">
+          <strong style="color:#3fb950">✓ C is correct.</strong> Time-to-productivity for new engineers is the clearest Maintainability signal.
+          A = Reliability (hardware fault). B = Scalability. D = Reliability (network fault → availability impact).
+          DDIA's goal for maintainability: make it possible to work on the system productively over time.
+        </div>
+      </div>
+    </section>
+
+    <!-- CONNECTIONS -->
+    <section class="section-card card-connections" id="connections">
+      <h2>🔗 How It Connects</h2>
+      <p>Today's three pillars are the conceptual spine of every chapter that follows:</p>
+      <ul class="feature-list">
+        <li><strong>Reliability</strong> → Day 2 (hardware faults), Day 3 (human errors), Days 50-60 (Transactions Ch7), Days 61-68 (distributed failures Ch8)</li>
+        <li><strong>Scalability</strong> → Day 4 (describing load), Day 5 (coping with load), Days 44-49 (Partitioning Ch6), Days 80-99 (Batch/Stream)</li>
+        <li><strong>Maintainability</strong> → Day 6, Days 7-14 (Data Models Ch2), Days 26-31 (Encoding Ch4)</li>
+        <li><strong>All Three Together</strong> → Days 32-43 (Replication Ch5), Days 69-79 (Consistency &amp; Consensus Ch9)</li>
+      </ul>
+      <div class="callout" style="margin-top:16px">
+        When you finish all 109 sessions, come back to this page. Every system you've learned about
+        will snap into place along these three axes. This diagram is your map.
+      </div>
+    </section>
+
+    <!-- TAKEAWAYS -->
+    <section class="section-card" id="takeaways">
+      <h2>💡 Key Takeaways</h2>
+      <div class="takeaway-cards">
+        <div class="takeaway-card">
+          <div class="tk-number">01</div>
+          <div class="tk-title">Data-intensive ≠ Compute-intensive</div>
+          <div class="tk-body">Most apps are bottlenecked by data — its volume, complexity, and rate of change. Not CPU cycles. The database is almost always the bottleneck.</div>
+        </div>
+        <div class="takeaway-card">
+          <div class="tk-number">02</div>
+          <div class="tk-title">Reliability = Correctness Under Faults</div>
+          <div class="tk-body">Hardware fails. Software has bugs. Humans make mistakes. A reliable system keeps working correctly despite all three — and does so by design, not by luck.</div>
+        </div>
+        <div class="takeaway-card">
+          <div class="tk-number">03</div>
+          <div class="tk-title">Scalability = Load → Performance Reasoning</div>
+          <div class="tk-body">"Scalable" is meaningless without numbers. Always ask: at what load? What's the performance characteristic? 10× load → what happens to p99 latency?</div>
+        </div>
+        <div class="takeaway-card">
+          <div class="tk-number">04</div>
+          <div class="tk-title">Maintainability is an Upfront Investment</div>
+          <div class="tk-body">Three sub-properties: Operability, Simplicity, Evolvability. Most of it is design decisions made before the first line of code — not comments added after.</div>
+        </div>
+        <div class="takeaway-card" style="grid-column:1/-1">
+          <div class="tk-number">05</div>
+          <div class="tk-title">The Three Pillars Conflict — That's the Game</div>
+          <div class="tk-body">Strong consistency (Reliability) costs throughput (Scalability). Distributed tracing (Maintainability) adds latency. Expert engineers don't find perfect solutions — they make deliberate, documented trade-offs and accept the costs they chose.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREVIEW -->
+    <section class="section-card" id="preview" style="border-style:dashed">
+      <h2>👀 Tomorrow — Day 2</h2>
+      <p>We zoom into <strong>Reliability</strong>: the sobering statistics on disk failure rates that should
+      make every database engineer lose sleep — and then the elegant techniques (RAID, replication, checksums)
+      that let the world's largest systems sleep soundly despite those odds.</p>
+    </section>
+
+  </main>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-sticky">
+      <div class="sidebar-box">
+        <h4>On This Page</h4>
+        <nav class="sidebar-nav" id="sidebarNav">
+          <a href="#hook">🚨 The Problem</a>
+          <a href="#the-what">📖 What Is DDIA?</a>
+          <a href="#analogy">🏙️ The Analogy</a>
+          <a href="#how-it-works">⚙️ How It Works</a>
+          <a href="#tradeoffs">⚖️ Trade-offs</a>
+          <a href="#in-the-wild">🌍 In the Wild</a>
+          <a href="#sde2-lens">🔭 SDE 2 Lens</a>
+          <a href="#system-design">🎯 Interview Playbook</a>
+          <a href="#misconceptions">🃏 Misconceptions</a>
+          <a href="#interactive">🤔 Interactive Zone</a>
+          <a href="#connections">🔗 Connections</a>
+          <a href="#takeaways">💡 Key Takeaways</a>
+        </nav>
+      </div>
+
+      <div class="sidebar-box">
+        <h4>Related Sessions</h4>
+        <span class="related-pill">Day 1 — You are here</span>
+        <div style="margin-top:10px">
+          <div style="font-size:11px;color:#8b949e;margin-bottom:6px">Coming Up</div>
+          <span class="locked-pill">🔒 Day 2 — Hardware Faults</span>
+          <span class="locked-pill">🔒 Day 3 — Human Errors</span>
+          <span class="locked-pill">🔒 Day 4 — Describing Load</span>
+          <span class="locked-pill">🔒 Day 5 — Coping with Load</span>
+          <span class="locked-pill">🔒 Day 6 — Maintainability</span>
+        </div>
+      </div>
+
+      <div class="sidebar-box">
+        <h4>Interview Relevance</h4>
+        <div class="interview-box">
+          This framing appears in <em>every</em> system design interview. Candidates who structure
+          answers around these three pillars immediately signal senior-level thinking. Start every
+          design by naming which pillar you're optimizing for — and why.
+        </div>
+      </div>
+
+      <div class="sidebar-box">
+        <h4>Three Pillars at a Glance</h4>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <span style="color:#f85149;font-size:18px;flex-shrink:0">🔴</span>
+            <div><div style="font-weight:600;color:#c9d1d9">Reliability</div><div style="color:#8b949e;font-size:12px">Works correctly under faults</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <span style="color:#3fb950;font-size:18px;flex-shrink:0">🟢</span>
+            <div><div style="font-weight:600;color:#c9d1d9">Scalability</div><div style="color:#8b949e;font-size:12px">Handles load growth gracefully</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <span style="color:#d29922;font-size:18px;flex-shrink:0">🟡</span>
+            <div><div style="font-weight:600;color:#c9d1d9">Maintainability</div><div style="color:#8b949e;font-size:12px">Teams work productively over time</div></div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </aside>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SECTION 10 — Key Takeaways
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <h2>✅ Key Takeaways</h2>
-    <ul class="takeaways">
-      <li>Data-intensive applications are bottlenecked by <strong>data</strong> (volume, complexity, rate of change), not CPU. Most modern applications are data-intensive.</li>
-      <li>The three core concerns of any data system are <strong>Reliability</strong> (works correctly even when faults occur), <strong>Scalability</strong> (has a plan for handling growth), and <strong>Maintainability</strong> (is easy for humans to operate and evolve).</li>
-      <li>A <strong>fault</strong> is a single component deviation; a <strong>failure</strong> is the whole system going down. Fault-tolerant design prevents faults from becoming failures.</li>
-      <li>These three concerns are often <strong>in tension</strong> — improving one can hurt the others. Good data system design means navigating these trade-offs consciously.</li>
-      <li>Reliability, scalability, and maintainability are <strong>non-functional requirements</strong> — they describe how a system behaves, and are often the determining factor in whether a system survives contact with production reality.</li>
-    </ul>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       Tomorrow's Preview
-  ══════════════════════════════════════════ -->
-  <div class="tomorrow">
-    <h2>🔭 Tomorrow: Day 2</h2>
-    <p>We dive into <strong>Reliability</strong> in depth — specifically, the things that go catastrophically wrong with <strong>hardware faults and software errors</strong>. We'll look at how disk failures, RAM bit-flips, and cascading software bugs have brought down entire systems — and what the world's most resilient architectures do differently.</p>
-    <p style="margin-top:10px;"><strong>Tomorrow's hook:</strong> A single flipped bit in RAM once caused a Boeing 747 to nosedive. What does that have to do with your database?</p>
-  </div>
-
-  <!-- ── Bottom nav ── -->
-  <div class="nav-links footer-nav">
-    <a class="disabled" href="#">← Previous Lesson</a>
-    <a href="day-02.html">Next Lesson →</a>
-  </div>
-
-</div><!-- /container -->
+<!-- FOOTER -->
+<footer class="page-footer">
+  <a class="footer-link disabled" href="#">← Day 0</a>
+  <a class="footer-link" href="index.html">🏠 Index</a>
+  <a class="footer-link" href="day-02.html">Day 2 →</a>
+</footer>
 
 <script>
-  // Animate progress bar on load
-  window.addEventListener('load', function() {
-    setTimeout(function() {
-      document.getElementById('progressFill').style.width = '0.92%';
-    }, 100);
-  });
+// Progress bar
+window.addEventListener('load', () => {
+  setTimeout(() => { document.getElementById('progressFill').style.width = (1/109*100).toFixed(2)+'%'; }, 300);
+});
 
-  // Toggle quiz answers
-  function toggleAnswer(btn) {
-    var answer = btn.nextElementSibling;
-    if (answer.style.display === 'block') {
-      answer.style.display = 'none';
-      btn.textContent = 'Reveal Answer';
-    } else {
-      answer.style.display = 'block';
-      btn.textContent = 'Hide Answer';
+// Chapter dropdown
+function toggleChapterMenu() { document.getElementById('chapterMenu').classList.toggle('open'); }
+document.addEventListener('click', e => {
+  if (!e.target.closest('.chapter-dropdown')) document.getElementById('chapterMenu').classList.remove('open');
+});
+
+// Scroll fade-in
+const fadeObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.section-card').forEach(el => fadeObs.observe(el));
+
+// Timeline stagger
+const tlObs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => { if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 160); });
+}, { threshold: 0.2 });
+document.querySelectorAll('.timeline-item').forEach(el => tlObs.observe(el));
+
+// Takeaway cards stagger
+const tkWrap = document.querySelector('.takeaway-cards');
+if (tkWrap) {
+  const tkObs = new IntersectionObserver(entries => {
+    if (entries.some(e => e.isIntersecting)) {
+      document.querySelectorAll('.takeaway-card').forEach((el, i) => {
+        setTimeout(() => el.classList.add('visible'), i * 120);
+      });
     }
+  }, { threshold: 0.1 });
+  tkObs.observe(tkWrap);
+}
+
+// Sidebar active
+const sections = document.querySelectorAll('section[id]');
+const sideLinks = document.querySelectorAll('.sidebar-nav a');
+const secObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      sideLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => secObs.observe(s));
+
+// Step-through
+const STEPS = [
+  { node:'sn0', html:'<strong>Client (Browser / Mobile App)</strong> — The boundary where reliability starts. DDIA asks: what if the client is on a flaky network? What if they send malformed data? What if the request times out mid-flight? <em>Never trust what comes in from outside.</em>' },
+  { node:'sn1', html:'<strong>Load Balancer</strong> — Your first scalability tool: distributes traffic so no single server is overwhelmed. But what if the load balancer itself fails? You need two (active-active or active-passive) with health checks. <em>Reliability meets Scalability: every new tool you add is a new failure domain.</em>' },
+  { node:'sn2', html:'<strong>Application Server</strong> — Stateless is the goal: no session state stored locally, so you can run 100 identical copies. Business logic lives here, not scattered in stored procedures. <em>DDIA Ch 1: Operability means you can restart any server without data loss or inconsistency.</em>' },
+  { node:'sn3', html:'<strong>Cache (Redis / Memcached)</strong> — Serves frequently-read data from RAM instead of disk: huge scalability win. But caches can go stale (reliability risk), fail cold after restart (thundering herd), or be poisoned by bad data. <em>Every optimization creates a new failure mode — this is the central insight of DDIA.</em>' },
+  { node:'sn4', html:'<strong>Database</strong> — The source of truth. DDIA dedicates Chapters 3, 7, and 9 to this single box. How does it store data on disk? How does it handle concurrent writes? How does it survive a crash mid-write? Understanding this one component is worth months of learning.' },
+  { node:'sn5', html:'<strong>Message Queue (Kafka / RabbitMQ)</strong> — Decouples writes from processing. User uploads a video → you return "success" immediately, process async. If a worker crashes mid-processing, the message stays in queue and gets redelivered. <em>Ch 11: This is where stream processing begins.</em>' },
+  { node:'sn6', html:'<strong>Workers / Consumers</strong> — Process messages: send emails, update search indexes, generate thumbnails. Key question: if a worker crashes and re-processes the same message, does it send two emails? <em>DDIA Ch 11 covers idempotency and exactly-once processing — harder than it sounds.</em>' }
+];
+
+let currentStep = -1;
+
+function highlightNode(id) {
+  for (let i = 0; i <= 6; i++) {
+    const g = document.getElementById('sn'+i);
+    if (!g) continue;
+    const rect = g.querySelector('rect');
+    if (rect) { rect.style.filter=''; rect.style.stroke='#30363d'; rect.style.strokeWidth='2'; }
   }
+  const g = document.getElementById(id);
+  if (g) {
+    const rect = g.querySelector('rect');
+    if (rect) { rect.style.filter='drop-shadow(0 0 10px #58a6ff)'; rect.style.stroke='#58a6ff'; rect.style.strokeWidth='3'; }
+  }
+}
+
+function nextStep() {
+  currentStep = Math.min(currentStep + 1, STEPS.length - 1);
+  const step = STEPS[currentStep];
+  highlightNode(step.node);
+  document.getElementById('stepInfo').innerHTML = step.html;
+  document.getElementById('stepCounter').textContent = `Step ${currentStep+1} of ${STEPS.length}`;
+  document.getElementById('stepReset').disabled = false;
+  document.getElementById('stepNext').disabled = currentStep >= STEPS.length - 1;
+}
+
+function resetStep() {
+  currentStep = -1;
+  for (let i = 0; i <= 6; i++) {
+    const g = document.getElementById('sn'+i);
+    if (!g) continue;
+    const rect = g.querySelector('rect');
+    if (rect) { rect.style.filter=''; rect.style.stroke='#30363d'; rect.style.strokeWidth='2'; }
+  }
+  document.getElementById('stepInfo').innerHTML = '<strong>Click "Next Step →" to begin</strong> — learn what DDIA teaches about each layer of a modern data system.';
+  document.getElementById('stepCounter').textContent = 'Step 0 of 7';
+  document.getElementById('stepReset').disabled = true;
+  document.getElementById('stepNext').disabled = false;
+}
+
+// Trade-off explorer
+const SCENARIOS = {
+  balanced: {
+    label:'A typical SaaS app with moderate traffic — the balanced default',
+    r:75, s:55, m:60, rL:'High', sL:'Medium', mL:'Medium',
+    rD:'Hardware redundancy, data backups, graceful degradation. A single disk failure shouldn\'t lose user data.',
+    sD:'Horizontal scaling for app servers, vertical for DB. Enough for now, not future-proof.',
+    mD:'Good docs, clean APIs, oncall runbooks. New engineers can onboard in two weeks.',
+    tension: null
+  },
+  startup: {
+    label:'Pre-PMF startup: 500 users, 3 engineers — move fast, learn fast',
+    r:35, s:30, m:95, rL:'Low', sL:'Low', mL:'Critical',
+    rD:'Nightly backups, basic alerting. Some data loss is OK — no one depends on it yet. Velocity > durability.',
+    sD:'A single server is fine. If it goes down, you fix it in 20 minutes. No sharding needed.',
+    mD:'CRITICAL. Your only competitive moat is iteration speed. If the system takes 2 days to change, you lose.',
+    tension:'⚠️ Tension: Low reliability can hurt user trust exactly when you\'re trying to win early adopters. The bet: you\'ll address it before you scale past the point where it matters.'
+  },
+  hyperscale: {
+    label:'500M+ users (think Facebook, Twitter, Netflix) — scale is the constraint',
+    r:80, s:100, m:45, rL:'High', sL:'MAXIMUM', mL:'Low',
+    rD:'Reliability is critical but RELAXED in specific ways: eventual consistency is acceptable. A tweet disappearing is OK. A payment disappearing is not. Reliability is tiered by business value.',
+    sD:'MAXIMUM PRIORITY. Everything is sharded, replicated, partitioned. Requests hit 10,000+ machines simultaneously. Linear scalability is the single non-negotiable engineering constraint.',
+    mD:'Suffers significantly. Systems at this scale grow incredibly complex. Entire teams own single sub-subsystems. New engineers take 6-12 months to become productive.',
+    tension:'⚠️ Tension: Scalability at this level creates massive complexity debt. Maintainability becomes the biggest engineering challenge after the scaling problems are solved. This is why FAANG has so many senior engineers.'
+  },
+  banking: {
+    label:'Fintech / Banking — "if we get this wrong, people lose money"',
+    r:100, s:55, m:80, rL:'CRITICAL', sL:'Medium', mL:'High',
+    rD:'CRITICAL. ACID transactions, strict durability, multi-datacenter replication, audit logs for every write. Zero tolerance for data loss. Regulatory requirements mandate this — it\'s not optional.',
+    sD:'Medium. Fintech doesn\'t need Twitter-scale. Strong consistency (2PC, Paxos) limits throughput — this is the accepted trade-off. A bank processing 50,000 TPS is a major engineering achievement precisely because of these constraints.',
+    mD:'High — regulatory audit requirements mean the system must be explainable, traceable, and documented. Every design decision is recorded.',
+    tension:'⚠️ Tension: Strong reliability (ACID, consensus protocols) severely limits scalability. This is why core banking systems use expensive proprietary hardware rather than cheap commodity clusters.'
+  },
+  analytics: {
+    label:'Analytics / Data Warehouse — high write volume, complex queries (Snowflake, BigQuery)',
+    r:60, s:90, m:75, rL:'Medium', sL:'High', mL:'Medium-High',
+    rD:'Moderate. Some ingestion lag is OK. Yesterday\'s data vs 5-minutes-ago data is usually fine for analytics. Recovery from failures matters more than preventing them.',
+    sD:'High priority. Petabytes of data, millions of rows per query. Columnar storage, vectorized execution, and massive parallelism are non-negotiable for acceptable query times.',
+    mD:'High — data teams (analysts, scientists, not just engineers) must use this. SQL interfaces, clear schema management, and good documentation are essential for adoption.',
+    tension: null
+  }
+};
+
+function setScenario(btn, key) {
+  const sc = SCENARIOS[key];
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('scenarioLabel').textContent = sc.label;
+  animBar('scoreR', sc.r); animBar('scoreS', sc.s); animBar('scoreM', sc.m);
+  document.getElementById('scoreRLabel').textContent = sc.rL;
+  document.getElementById('scoreSLabel').textContent = sc.sL;
+  document.getElementById('scoreMLabel').textContent = sc.mL;
+  document.getElementById('descR').textContent = sc.rD;
+  document.getElementById('descS').textContent = sc.sD;
+  document.getElementById('descM').textContent = sc.mD;
+  ['pillarR','pillarS','pillarM'].forEach(id => document.getElementById(id).classList.remove('highlighted'));
+  const maxV = Math.max(sc.r, sc.s, sc.m);
+  if (sc.r === maxV) document.getElementById('pillarR').classList.add('highlighted');
+  if (sc.s === maxV) document.getElementById('pillarS').classList.add('highlighted');
+  if (sc.m === maxV) document.getElementById('pillarM').classList.add('highlighted');
+  const tn = document.getElementById('tensionNote');
+  tn.textContent = sc.tension || '';
+  tn.classList.toggle('show', !!sc.tension);
+}
+
+function animBar(id, pct) {
+  const el = document.getElementById(id);
+  el.style.width = '0%';
+  setTimeout(() => { el.style.width = pct + '%'; }, 60);
+}
+
+// Quiz
+let quizDone = false;
+function checkAnswer(btn, correct) {
+  if (quizDone) return;
+  quizDone = true;
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  document.querySelectorAll('.quiz-opt').forEach(b => {
+    b.classList.add('locked');
+    if (b !== btn && b.textContent.includes('C)')) b.classList.add('correct');
+  });
+  document.getElementById('quizReveal').style.display = 'block';
+}
+
+// Smooth scroll for sidebar
+document.querySelectorAll('.sidebar-nav a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) t.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+});
 </script>
 </body>
 </html>
