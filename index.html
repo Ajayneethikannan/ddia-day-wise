@@ -5,491 +5,514 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📚 DDIA Mastery — SDE 2 → System Design Expert</title>
 <style>
-/* ─── Reset & Base ─────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
   background: #0d1117; color: #e6edf3;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 16px; line-height: 1.7; overflow-x: hidden;
+  font-size: 16px; line-height: 1.6;
 }
-
-/* ─── Navbar ─────────────────────────────────────────────────── */
+/* Navbar */
 .navbar {
   position: sticky; top: 0; z-index: 100;
   background: #161b22; border-bottom: 1px solid #30363d;
-  display: flex; align-items: center; gap: 16px; padding: 0 24px; height: 56px;
+  padding: 0 24px; height: 56px;
+  display: flex; align-items: center; gap: 20px;
 }
 .nav-logo { font-weight: 700; font-size: 1rem; color: #58a6ff; text-decoration: none; }
 .nav-logo:hover { color: #79c0ff; }
-.nav-spacer { flex: 1; }
+.nav-right { margin-left: auto; display: flex; gap: 12px; align-items: center; }
 .nav-link {
-  color: #8b949e; text-decoration: none; font-size: 14px;
-  padding: 6px 12px; border-radius: 6px; transition: all .2s;
+  color: #8b949e; text-decoration: none; font-size: 13px;
+  padding: 5px 12px; border: 1px solid #30363d; border-radius: 6px; transition: all .2s;
 }
-.nav-link:hover { color: #e6edf3; background: #21262d; }
-
-/* ─── Layout ──────────────────────────────────────────────────── */
-.page-wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px 80px; display: grid; grid-template-columns: 1fr 220px; gap: 0 28px; }
-.main-content { grid-column: 1; min-width: 0; }
-.index-sidebar { grid-column: 2; }
-@media (max-width: 768px) { .page-wrap { grid-template-columns: 1fr; } .index-sidebar { grid-column: 1; } }
-
-/* ─── Hero ────────────────────────────────────────────────────── */
+.nav-link:hover { border-color: #58a6ff; color: #e6edf3; }
+/* Hero */
 .hero {
-  text-align: center; padding: 60px 20px 48px;
-  background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
-  border-bottom: 1px solid #30363d; margin-bottom: 32px;
+  background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+  border-bottom: 1px solid #30363d; padding: 56px 24px 44px; text-align: center;
 }
-.hero-badge {
-  display: inline-block; background: #1c2d44; border: 1px solid #58a6ff44; color: #58a6ff;
-  font-size: 12px; font-weight: 600; padding: 4px 14px; border-radius: 20px; margin-bottom: 20px;
-  letter-spacing: .06em; text-transform: uppercase;
+.hero-eyebrow {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .15em; color: #3fb950; margin-bottom: 12px;
 }
-.hero-title { font-size: clamp(2rem,5vw,3rem); font-weight: 800; color: #e6edf3; line-height: 1.15; margin-bottom: 12px; }
+.hero-title { font-size: clamp(1.8rem,5vw,3rem); font-weight: 800; color: #e6edf3; line-height: 1.15; margin-bottom: 8px; }
 .hero-title span { color: #58a6ff; }
-.hero-sub { font-size: 1.05rem; color: #8b949e; max-width: 600px; margin: 0 auto 32px; }
-.hero-stats { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; margin-bottom: 32px; }
-.hero-stat { text-align: center; }
-.hero-stat .stat-n { font-size: 2rem; font-weight: 800; color: #58a6ff; }
-.hero-stat .stat-l { font-size: 12px; color: #8b949e; margin-top: 2px; }
-.hero-progress-wrap { max-width: 480px; margin: 0 auto; }
-.hero-progress-labels { display: flex; justify-content: space-between; font-size: 12px; color: #8b949e; margin-bottom: 8px; }
-.hero-progress-track { background: #21262d; border-radius: 8px; height: 10px; overflow: hidden; }
-.hero-progress-fill {
-  height: 100%; border-radius: 8px;
-  background: linear-gradient(90deg, #1f6feb, #58a6ff, #3fb950);
-  width: 0; transition: width 1.4s cubic-bezier(.4,0,.2,1);
+.hero-sub { font-size: 1rem; color: #8b949e; max-width: 540px; margin: 0 auto 28px; }
+.hero-progress {
+  max-width: 480px; margin: 0 auto;
+  background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 16px 20px;
 }
-
-/* ─── Search ──────────────────────────────────────────────────── */
-.search-wrap { margin: 0 0 28px; }
-.search-input {
-  width: 100%; padding: 12px 18px; background: #161b22; border: 1px solid #30363d;
-  border-radius: 8px; color: #e6edf3; font-size: 15px; outline: none; transition: border-color .2s;
+.hero-progress-meta { display: flex; justify-content: space-between; font-size: 13px; color: #8b949e; margin-bottom: 8px; }
+.progress-track { background: #21262d; border-radius: 4px; height: 8px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg,#58a6ff,#3fb950); border-radius: 4px; width: 0; transition: width 1.4s ease; }
+.hero-badges { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid; }
+.hero-badge.green  { background:#0d1a0e; border-color:#3fb950; color:#3fb950; }
+.hero-badge.blue   { background:#0f1a2e; border-color:#58a6ff; color:#58a6ff; }
+.hero-badge.yellow { background:#1a1200; border-color:#d29922; color:#d29922; }
+/* Search */
+.search-wrap { max-width: 600px; margin: 32px auto 0; padding: 0 24px; }
+#searchInput {
+  width: 100%; padding: 12px 16px; font-size: 15px;
+  background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+  color: #e6edf3; outline: none; transition: border-color .2s;
 }
-.search-input:focus { border-color: #58a6ff; }
-.search-input::placeholder { color: #8b949e; }
-
-/* ─── Chapter Section ─────────────────────────────────────────── */
-.chapter-section {
-  margin-bottom: 28px; border: 1px solid #30363d; border-radius: 10px; overflow: hidden;
-  opacity: 0; transform: translateY(16px); transition: opacity .5s ease, transform .5s ease;
+#searchInput:focus { border-color: #58a6ff; }
+#searchInput::placeholder { color: #484f58; }
+#searchResults { background: #161b22; border: 1px solid #30363d; border-radius: 8px; margin-top: 4px; display: none; }
+.search-result-item {
+  display: flex; gap: 12px; padding: 10px 14px; text-decoration: none; color: #e6edf3;
+  align-items: center; border-bottom: 1px solid #21262d; transition: background .15s;
 }
-.chapter-section.visible { opacity: 1; transform: translateY(0); }
-.chapter-summary {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 16px 22px; background: #161b22; cursor: pointer; list-style: none;
-  transition: background .15s;
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:hover { background: #21262d; }
+.sr-day { font-size: 11px; font-weight: 700; color: #58a6ff; min-width: 44px; }
+.sr-title { font-size: 14px; flex: 1; }
+.sr-ch { font-size: 12px; color: #8b949e; }
+/* Layout */
+.page-body {
+  max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px;
+  display: grid; grid-template-columns: 200px 1fr; gap: 32px; align-items: start;
 }
-.chapter-summary:hover { background: #1c2128; }
-.chapter-summary::-webkit-details-marker { display: none; }
-.ch-left { display: flex; align-items: center; gap: 14px; }
-.ch-num { font-size: 11px; color: #8b949e; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; min-width: 48px; }
-.ch-title { font-size: .95rem; font-weight: 600; color: #e6edf3; }
-.ch-desc { font-size: 12px; color: #8b949e; margin-top: 2px; }
-.ch-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-.ch-progress-pill {
-  font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 12px;
-  border: 1px solid #30363d; background: #21262d; color: #8b949e; white-space: nowrap;
-}
-.ch-progress-pill.has-done { background: #1c2d44; border-color: #58a6ff44; color: #58a6ff; }
-.ch-arrow { color: #8b949e; font-size: 12px; transition: transform .2s; }
-details[open] .ch-arrow { transform: rotate(90deg); }
-.chapter-body { padding: 20px 22px; background: #0d1117; }
-
-/* ─── Card Grid ───────────────────────────────────────────────── */
-.card-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
-@media (max-width: 600px) { .card-grid { grid-template-columns: 1fr; } }
-@media (max-width: 900px) { .card-grid { grid-template-columns: repeat(2,1fr); } }
-
-.lesson-card {
-  background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px 16px;
-  text-decoration: none; display: block; transition: all .2s;
-  opacity: 0; transform: translateY(8px);
-}
-.lesson-card.animate-in { animation: cardFadeIn .4s ease forwards; }
-@keyframes cardFadeIn { to { opacity: 1; transform: translateY(0); } }
-.lesson-card.done { border-color: #30363d; }
-.lesson-card.done:hover { border-color: #58a6ff; background: #1c2d44; transform: translateY(-2px); box-shadow: 0 4px 20px rgba(88,166,255,.1); }
-.lesson-card.locked { opacity: .45; cursor: default; }
-.lesson-card.locked:hover { transform: none; border-color: #30363d; }
-.card-day { font-size: 11px; color: #8b949e; font-weight: 600; letter-spacing: .08em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-.card-day .done-dot { width: 7px; height: 7px; border-radius: 50%; background: #3fb950; display: inline-block; }
-.card-day .lock-icon { font-size: 10px; }
-.card-title { font-size: 13px; color: #c9d1d9; font-weight: 500; line-height: 1.4; }
-.lesson-card.done .card-title { color: #e6edf3; }
-
-/* ─── Sidebar ─────────────────────────────────────────────────── */
-.sidebar-sticky { position: sticky; top: 72px; }
-.sidebar-box { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 18px; margin-bottom: 14px; }
-.sidebar-box h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: #8b949e; margin-bottom: 14px; }
-.chapter-jump { display: flex; flex-direction: column; gap: 4px; }
-.chapter-jump a {
+@media (max-width:800px) { .page-body { grid-template-columns:1fr; } .jump-sidebar { display:none; } }
+/* Sidebar */
+.jump-sidebar { position: sticky; top: 72px; }
+.jump-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #8b949e; margin-bottom: 12px; padding: 0 4px; }
+.jump-link {
   display: flex; justify-content: space-between; align-items: center;
-  color: #8b949e; text-decoration: none; font-size: 12px; padding: 5px 8px; border-radius: 6px; transition: all .2s;
+  padding: 6px 8px; font-size: 12px; color: #8b949e; text-decoration: none;
+  border-radius: 5px; border-left: 2px solid transparent;
+  transition: background .15s, color .15s, border-color .15s; margin-bottom: 2px;
 }
-.chapter-jump a:hover { color: #e6edf3; background: #21262d; }
-.chapter-jump a .cj-num { font-size: 11px; color: #8b949e; }
-.chapter-jump a .cj-done { font-size: 11px; color: #3fb950; font-weight: 600; }
-
-/* ─── No results ──────────────────────────────────────────────── */
-.no-results { text-align: center; padding: 40px; color: #8b949e; font-size: 14px; display: none; }
+.jump-link:hover { background: #21262d; color: #e6edf3; }
+.jump-link.has-content { color: #c9d1d9; }
+.jump-link.has-content:hover { border-left-color: #58a6ff; }
+.jump-count { font-size: 10px; color: #484f58; }
+/* Chapter blocks */
+.chapter-block {
+  background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+  margin-bottom: 16px; overflow: hidden;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.chapter-block.visible { opacity: 1; transform: translateY(0); }
+.chapter-summary {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; cursor: pointer; list-style: none; gap: 12px; user-select: none;
+}
+.chapter-summary::-webkit-details-marker { display: none; }
+.ch-left { display: flex; align-items: center; gap: 12px; }
+.ch-num {
+  min-width: 30px; height: 30px; border-radius: 50%;
+  background: #21262d; color: #8b949e; font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+details[open] .ch-num { background: #1c3a5e; color: #58a6ff; }
+.ch-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #8b949e; }
+details[open] .ch-label { color: #58a6ff; }
+.ch-title { font-size: 14px; font-weight: 700; color: #e6edf3; }
+.ch-relevance { font-size: 12px; color: #8b949e; margin-top: 2px; display: none; }
+details[open] .ch-relevance { display: block; }
+.ch-progress-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.ch-fraction { font-size: 12px; color: #8b949e; white-space: nowrap; }
+.ch-mini-bar { width: 60px; height: 4px; background: #21262d; border-radius: 2px; overflow: hidden; }
+.ch-mini-fill { height: 100%; background: linear-gradient(90deg,#58a6ff,#3fb950); border-radius: 2px; }
+.ch-chevron { font-size: 12px; color: #484f58; transition: transform .25s; }
+details[open] .ch-chevron { transform: rotate(90deg); }
+/* Lesson grid */
+.lessons-grid {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; padding: 4px 16px 16px;
+}
+@media (max-width:700px) { .lessons-grid { grid-template-columns:1fr; } }
+@media (max-width:900px) and (min-width:700px) { .lessons-grid { grid-template-columns:repeat(2,1fr); } }
+.lesson-card {
+  border-radius: 8px; padding: 12px 14px; text-decoration: none; display: block;
+  transition: all .2s; border: 1px solid;
+}
+.lesson-card.done {
+  background: #1c2128; border-color: #30363d; color: #e6edf3;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity .35s ease, transform .35s ease, box-shadow .2s, border-color .2s;
+}
+.lesson-card.done.visible { opacity: 1; transform: translateY(0); }
+.lesson-card.done:hover { border-color: #58a6ff; box-shadow: 0 0 12px rgba(88,166,255,.15); }
+.lesson-card.locked { background: #0d1117; border-color: #21262d; cursor: default; }
+.card-day { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+.lesson-card.done .card-day { color: #58a6ff; }
+.lesson-card.locked .card-day { color: #30363d; }
+.card-title { font-size: 13px; font-weight: 600; line-height: 1.35; }
+.lesson-card.done .card-title { color: #e6edf3; }
+.lesson-card.locked .card-title { color: #484f58; }
+.card-lock { font-size: 11px; color: #30363d; margin-top: 4px; }
+.stats-strip { display: flex; gap: 24px; flex-wrap: wrap; padding: 10px 20px 0; border-top: 1px solid #21262d; font-size: 12px; color: #8b949e; }
+.stats-strip strong { color: #58a6ff; }
+@media (max-width:600px) { .hero { padding:36px 16px 32px; } .page-body { padding:16px 16px 60px; } }
 </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar">
-  <a class="nav-logo" href="index.html">📚 DDIA</a>
-  <span class="nav-spacer"></span>
-  <a class="nav-link" href="#search">🔍 Search</a>
-  <a class="nav-link" href="day-01.html">Start →</a>
+  <a class="nav-logo" href="index.html">📚 DDIA Daily</a>
+  <div class="nav-right">
+    <a class="nav-link" href="day-01.html">Today: Day 1</a>
+    <a class="nav-link" href="#search">🔍 Search</a>
+  </div>
 </nav>
 
-<!-- HERO -->
 <div class="hero">
-  <div class="hero-badge">109 Sessions · 12 Chapters · SDE 2 → Staff Engineer</div>
-  <h1 class="hero-title">📚 DDIA <span>Mastery</span></h1>
-  <p class="hero-sub">A daily deep-dive into <em>Designing Data-Intensive Applications</em> — the book every senior engineer wishes they'd read earlier.</p>
-  <div class="hero-stats">
-    <div class="hero-stat"><div class="stat-n" id="statDone">1</div><div class="stat-l">Sessions Complete</div></div>
-    <div class="hero-stat"><div class="stat-n">109</div><div class="stat-l">Total Sessions</div></div>
-    <div class="hero-stat"><div class="stat-n">12</div><div class="stat-l">Chapters</div></div>
-    <div class="hero-stat"><div class="stat-n" id="statPct">0.9%</div><div class="stat-l">Complete</div></div>
-  </div>
-  <div class="hero-progress-wrap">
-    <div class="hero-progress-labels"><span>Progress</span><span id="heroProgressLabel">1 / 109</span></div>
-    <div class="hero-progress-track"><div class="hero-progress-fill" id="heroProgressFill"></div></div>
+  <div class="hero-eyebrow">109-Session Guided Curriculum</div>
+  <h1 class="hero-title">📚 DDIA Mastery<br><span>SDE 2 → System Design Expert</span></h1>
+  <p class="hero-sub">One deep, interactive lesson per day from the world's best book on data systems — built for engineers leveling up to senior and staff roles.</p>
+  <div class="hero-progress">
+    <div class="hero-progress-meta"><span>Overall Progress</span><span>1 / 109 sessions complete</span></div>
+    <div class="progress-track"><div class="progress-fill" id="heroPF"></div></div>
+    <div class="hero-badges">
+      <span class="hero-badge green">✓ 1 Session Done</span>
+      <span class="hero-badge blue">108 Remaining</span>
+      <span class="hero-badge yellow">12 Chapters</span>
+    </div>
   </div>
 </div>
 
-<div class="page-wrap">
-  <main class="main-content">
+<div class="search-wrap" id="search">
+  <input type="text" id="searchInput" placeholder="🔍  Search by topic, concept, or system (e.g. &quot;LSM-tree&quot;, &quot;CAP&quot;, &quot;Kafka&quot;)..." autocomplete="off">
+  <div id="searchResults"></div>
+</div>
 
-    <!-- SEARCH -->
-    <div class="search-wrap" id="search">
-      <input class="search-input" id="searchInput" type="search" placeholder="🔍 Search sessions — e.g. 'B-Tree', 'replication lag', 'CAP theorem'..." autocomplete="off" oninput="doSearch()">
-    </div>
-
-    <div id="noResults" class="no-results">No sessions match your search. Try a different term.</div>
-    <div id="chaptersRoot"></div>
-
-  </main>
-
-  <!-- SIDEBAR -->
-  <aside class="index-sidebar">
-    <div class="sidebar-sticky">
-      <div class="sidebar-box">
-        <h4>Jump to Chapter</h4>
-        <div class="chapter-jump" id="chapterJump"></div>
-      </div>
-      <div class="sidebar-box" style="font-size:13px;color:#8b949e;line-height:1.6">
-        <h4>About This Series</h4>
-        One deep, interactive lesson per day. Each session covers ~5 pages of DDIA with animated diagrams, trade-off explorers, system design playbooks, and interview prep.
-        <br><br>
-        Start at Day 1 and work forward. Cross-links connect related concepts across chapters.
-      </div>
-      <div class="sidebar-box">
-        <h4>Legend</h4>
-        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#3fb950;flex-shrink:0"></div><span style="color:#c9d1d9">Completed</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#30363d;flex-shrink:0"></div><span style="color:#8b949e">Coming Soon</span></div>
-        </div>
-      </div>
-    </div>
+<div class="page-body">
+  <aside class="jump-sidebar">
+    <div class="jump-title">Jump to Chapter</div>
+    <a class="jump-link has-content" href="#ch1">Ch 1 — Foundations <span class="jump-count">1/6</span></a>
+    <a class="jump-link" href="#ch2">Ch 2 — Data Models <span class="jump-count">0/8</span></a>
+    <a class="jump-link" href="#ch3">Ch 3 — Storage <span class="jump-count">0/11</span></a>
+    <a class="jump-link" href="#ch4">Ch 4 — Encoding <span class="jump-count">0/6</span></a>
+    <a class="jump-link" href="#ch5">Ch 5 — Replication <span class="jump-count">0/12</span></a>
+    <a class="jump-link" href="#ch6">Ch 6 — Partitioning <span class="jump-count">0/6</span></a>
+    <a class="jump-link" href="#ch7">Ch 7 — Transactions <span class="jump-count">0/11</span></a>
+    <a class="jump-link" href="#ch8">Ch 8 — Dist. Trouble <span class="jump-count">0/8</span></a>
+    <a class="jump-link" href="#ch9">Ch 9 — Consistency <span class="jump-count">0/11</span></a>
+    <a class="jump-link" href="#ch10">Ch 10 — Batch <span class="jump-count">0/10</span></a>
+    <a class="jump-link" href="#ch11">Ch 11 — Streams <span class="jump-count">0/10</span></a>
+    <a class="jump-link" href="#ch12">Ch 12 — Future <span class="jump-count">0/10</span></a>
   </aside>
+
+  <div class="chapters-area" id="chaptersArea">
+
+    <!-- CH 1 -->
+    <details class="chapter-block" id="ch1" open>
+      <summary class="chapter-summary">
+        <div class="ch-left">
+          <div class="ch-num">1</div>
+          <div class="ch-info">
+            <div class="ch-label">Chapter 1</div>
+            <div class="ch-title">Reliable, Scalable, Maintainable Applications</div>
+            <div class="ch-relevance">The three concerns that frame every system design interview question.</div>
+          </div>
+        </div>
+        <div class="ch-progress-right">
+          <span class="ch-fraction">1 / 6</span>
+          <div class="ch-mini-bar"><div class="ch-mini-fill" style="width:16.7%"></div></div>
+          <span class="ch-chevron">▶</span>
+        </div>
+      </summary>
+      <div class="stats-strip"><span><strong>1</strong> complete</span><span><strong>5</strong> upcoming</span><span>Days 1–6</span></div>
+      <div class="lessons-grid">
+        <a class="lesson-card done" href="day-01.html"><div class="card-day">Day 1</div><div class="card-title">What Is a Data-Intensive Application? The Three Concerns</div></a>
+        <div class="lesson-card locked"><div class="card-day">Day 2</div><div class="card-title">Reliability: Hardware Faults &amp; Software Errors</div><div class="card-lock">🔒 Coming soon</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 3</div><div class="card-title">Reliability: Human Errors &amp; Importance of Reliability</div><div class="card-lock">🔒 Coming soon</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 4</div><div class="card-title">Scalability: Describing Load and Performance</div><div class="card-lock">🔒 Coming soon</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 5</div><div class="card-title">Scalability: Coping with Load</div><div class="card-lock">🔒 Coming soon</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 6</div><div class="card-title">Maintainability: Operability, Simplicity, Evolvability</div><div class="card-lock">🔒 Coming soon</div></div>
+      </div>
+    </details>
+
+    <!-- CH 2 -->
+    <details class="chapter-block" id="ch2">
+      <summary class="chapter-summary">
+        <div class="ch-left"><div class="ch-num">2</div><div class="ch-info"><div class="ch-label">Chapter 2</div><div class="ch-title">Data Models and Query Languages</div><div class="ch-relevance">SQL vs NoSQL — the trade-offs that actually matter for system design.</div></div></div>
+        <div class="ch-progress-right"><span class="ch-fraction">0 / 8</span><div class="ch-mini-bar"><div class="ch-mini-fill" style="width:0%"></div></div><span class="ch-chevron">▶</span></div>
+      </summary>
+      <div class="lessons-grid">
+        <div class="lesson-card locked"><div class="card-day">Day 7</div><div class="card-title">Relational Model, Birth of NoSQL</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 8</div><div class="card-title">Object-Relational Mismatch, Many-to-One</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 9</div><div class="card-title">Are Document DBs Repeating History? Network Model</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 10</div><div class="card-title">Relational Model Defense, Document DBs Revisited</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 11</div><div class="card-title">Relational vs Document Databases Today</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 12</div><div class="card-title">Query Languages: SQL and MapReduce</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 13</div><div class="card-title">Graph-Like Data Models: Property Graphs, Cypher</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 14</div><div class="card-title">Triple-Stores, SPARQL, Datalog</div><div class="card-lock">🔒</div></div>
+      </div>
+    </details>
+
+    <!-- CH 3 -->
+    <details class="chapter-block" id="ch3">
+      <summary class="chapter-summary">
+        <div class="ch-left"><div class="ch-num">3</div><div class="ch-info"><div class="ch-label">Chapter 3</div><div class="ch-title">Storage and Retrieval</div><div class="ch-relevance">How databases work inside — LSM-trees, B-trees, indexes, OLAP vs OLTP.</div></div></div>
+        <div class="ch-progress-right"><span class="ch-fraction">0 / 11</span><div class="ch-mini-bar"><div class="ch-mini-fill" style="width:0%"></div></div><span class="ch-chevron">▶</span></div>
+      </summary>
+      <div class="lessons-grid">
+        <div class="lesson-card locked"><div class="card-day">Day 15</div><div class="card-title">World's Simplest Database, Hash Indexes</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 16</div><div class="card-title">SSTables Intro</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 17</div><div class="card-title">LSM-Trees</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 18</div><div class="card-title">B-Trees</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 19</div><div class="card-title">Comparing B-Trees and LSM-Trees</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 20</div><div class="card-title">Other Indexing Structures, Clustered Indexes</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 21</div><div class="card-title">Multi-Column Indexes, Full-Text, In-Memory DBs</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 22</div><div class="card-title">OLTP vs OLAP</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 23</div><div class="card-title">Data Warehousing, Star and Snowflake Schemas</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 24</div><div class="card-title">Column-Oriented Storage, Column Compression</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 25</div><div class="card-title">Sort Order, Writing to Column Storage, Aggregation</div><div class="card-lock">🔒</div></div>
+      </div>
+    </details>
+
+    <!-- CH 4 -->
+    <details class="chapter-block" id="ch4">
+      <summary class="chapter-summary">
+        <div class="ch-left"><div class="ch-num">4</div><div class="ch-info"><div class="ch-label">Chapter 4</div><div class="ch-title">Encoding and Evolution</div><div class="ch-relevance">Why schema evolution and backward compatibility are harder than they look.</div></div></div>
+        <div class="ch-progress-right"><span class="ch-fraction">0 / 6</span><div class="ch-mini-bar"><div class="ch-mini-fill" style="width:0%"></div></div><span class="ch-chevron">▶</span></div>
+      </summary>
+      <div class="lessons-grid">
+        <div class="lesson-card locked"><div class="card-day">Day 26</div><div class="card-title">JSON, XML, Binary Encoding</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 27</div><div class="card-title">Thrift and Protocol Buffers</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 28</div><div class="card-title">Avro</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 29</div><div class="card-title">Merits of Schemas, Dataflow Through Databases</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 30</div><div class="card-title">Dataflow Through Services: REST and RPC</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 31</div><div class="card-title">Message-Passing Dataflow</div><div class="card-lock">🔒</div></div>
+      </div>
+    </details>
+
+    <!-- CH 5 -->
+    <details class="chapter-block" id="ch5">
+      <summary class="chapter-summary">
+        <div class="ch-left"><div class="ch-num">5</div><div class="ch-info"><div class="ch-label">Chapter 5</div><div class="ch-title">Replication</div><div class="ch-relevance">The primary tool for reliability at scale — with deep consistency trade-offs.</div></div></div>
+        <div class="ch-progress-right"><span class="ch-fraction">0 / 12</span><div class="ch-mini-bar"><div class="ch-mini-fill" style="width:0%"></div></div><span class="ch-chevron">▶</span></div>
+      </summary>
+      <div class="lessons-grid">
+        <div class="lesson-card locked"><div class="card-day">Day 32</div><div class="card-title">Leaders and Followers</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 33</div><div class="card-title">Sync vs Async Replication, Setting Up Followers</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 34</div><div class="card-title">Handling Node Outages</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 35</div><div class="card-title">Implementation of Replication Logs</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 36</div><div class="card-title">Problems with Replication Lag</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 37</div><div class="card-title">Reading Your Own Writes</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 38</div><div class="card-title">Monotonic Reads, Consistent Prefix Reads</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 39</div><div class="card-title">Solutions for Replication Lag, Multi-Leader Intro</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 40</div><div class="card-title">Multi-Leader Use Cases, Write Conflicts</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 41</div><div class="card-title">Conflict Resolution, Multi-Leader Topologies</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 42</div><div class="card-title">Leaderless Replication</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 43</div><div class="card-title">Quorums, Sloppy Quorums</div><div class="card-lock">🔒</div></div>
+      </div>
+    </details>
+
+    <!-- CH 6 -->
+    <details class="chapter-block" id="ch6">
+      <summary class="chapter-summary">
+        <div class="ch-left"><div class="ch-num">6</div><div class="ch-info"><div class="ch-label">Chapter 6</div><div class="ch-title">Partitioning</div><div class="ch-relevance">How to split data across nodes without creating hot spots or complex re-routing.</div></div></div>
+        <div class="ch-progress-right"><span class="ch-fraction">0 / 6</span><div class="ch-mini-bar"><div class="ch-mini-fill" style="width:0%"></div></div><span class="ch-chevron">▶</span></div>
+      </summary>
+      <div class="lessons-grid">
+        <div class="lesson-card locked"><div class="card-day">Day 44</div><div class="card-title">Intro, Partitioning and Replication</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 45</div><div class="card-title">Partitioning by Key Range vs Hash</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 46</div><div class="card-title">Skewed Workloads, Document-Based Secondary Indexes</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 47</div><div class="card-title">Term-Based Secondary Indexes</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 48</div><div class="card-title">Rebalancing Strategies</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 49</div><div class="card-title">Request Routing</div><div class="card-lock">🔒</div></div>
+      </div>
+    </details>
+
+    <!-- CH 7 -->
+    <details class="chapter-block" id="ch7">
+      <summary class="chapter-summary">
+        <div class="ch-left"><div class="ch-num">7</div><div class="ch-info"><div class="ch-label">Chapter 7</div><div class="ch-title">Transactions</div><div class="ch-relevance">ACID, isolation levels, and why "just use transactions" is complicated at scale.</div></div></div>
+        <div class="ch-progress-right"><span class="ch-fraction">0 / 11</span><div class="ch-mini-bar"><div class="ch-mini-fill" style="width:0%"></div></div><span class="ch-chevron">▶</span></div>
+      </summary>
+      <div class="lessons-grid">
+        <div class="lesson-card locked"><div class="card-day">Day 50</div><div class="card-title">Intro, ACID: Atomicity and Consistency</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 51</div><div class="card-title">Isolation, Durability, Single vs Multi-Object Ops</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 52</div><div class="card-title">Handling Errors and Aborts</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 53</div><div class="card-title">Weak Isolation: Read Committed</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 54</div><div class="card-title">Snapshot Isolation and Repeatable Read</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 55</div><div class="card-title">Implementing Snapshot Isolation</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 56</div><div class="card-title">Preventing Lost Updates</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 57</div><div class="card-title">Write Skew and Phantoms</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 58</div><div class="card-title">Serializability: Actual Serial Execution</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 59</div><div class="card-title">Two-Phase Locking</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 60</div><div class="card-title">Serializable Snapshot Isolation</div><div class="card-lock">🔒</div></div>
+      </div>
+    </details>
+
+    <!-- CH 8 -->
+    <details class="chapter-block" id="ch8">
+      <summary class="chapter-summary">
+        <div class="ch-left"><div class="ch-num">8</div><div class="ch-info"><div class="ch-label">Chapter 8</div><div class="ch-title">The Trouble with Distributed Systems</div><div class="ch-relevance">Networks lie, clocks drift, processes pause — the brutal reality of distributed computing.</div></div></div>
+        <div class="ch-progress-right"><span class="ch-fraction">0 / 8</span><div class="ch-mini-bar"><div class="ch-mini-fill" style="width:0%"></div></div><span class="ch-chevron">▶</span></div>
+      </summary>
+      <div class="lessons-grid">
+        <div class="lesson-card locked"><div class="card-day">Day 61</div><div class="card-title">Faults and Partial Failures</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 62</div><div class="card-title">Unreliable Networks</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 63</div><div class="card-title">Detecting Faults, Timeouts, Unbounded Delays</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 64</div><div class="card-title">Synchronous vs Async Networks</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 65</div><div class="card-title">Unreliable Clocks: Monotonic vs Time-of-Day</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 66</div><div class="card-title">Clock Sync, Timestamps for Ordering Events</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 67</div><div class="card-title">Process Pauses, Knowledge, Truth and Lies</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 68</div><div class="card-title">Byzantine Generals, System Models</div><div class="card-lock">🔒</div></div>
+      </div>
+    </details>
+
+    <!-- CH 9 -->
+    <details class="chapter-block" id="ch9">
+      <summary class="chapter-summary">
+        <div class="ch-left"><div class="ch-num">9</div><div class="ch-info"><div class="ch-label">Chapter 9</div><div class="ch-title">Consistency and Consensus</div><div class="ch-relevance">Linearizability, CAP theorem, and why distributed consensus is so hard.</div></div></div>
+        <div class="ch-progress-right"><span class="ch-fraction">0 / 11</span><div class="ch-mini-bar"><div class="ch-mini-fill" style="width:0%"></div></div><span class="ch-chevron">▶</span></div>
+      </summary>
+      <div class="lessons-grid">
+        <div class="lesson-card locked"><div class="card-day">Day 69</div><div class="card-title">Linearizability</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 70</div><div class="card-title">What Makes a System Linearizable?</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 71</div><div class="card-title">Relying on Linearizability, Implementing It</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 72</div><div class="card-title">Cost of Linearizability, CAP Theorem</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 73</div><div class="card-title">Ordering Guarantees, Sequence Number Ordering</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 74</div><div class="card-title">Lamport Timestamps</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 75</div><div class="card-title">Total Order Broadcast</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 76</div><div class="card-title">Distributed Transactions, Two-Phase Commit</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 77</div><div class="card-title">Distributed Transactions in Practice</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 78</div><div class="card-title">Fault-Tolerant Consensus Algorithms</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 79</div><div class="card-title">Membership and Coordination Services</div><div class="card-lock">🔒</div></div>
+      </div>
+    </details>
+
+    <!-- CH 10 -->
+    <details class="chapter-block" id="ch10">
+      <summary class="chapter-summary">
+        <div class="ch-left"><div class="ch-num">10</div><div class="ch-info"><div class="ch-label">Chapter 10</div><div class="ch-title">Batch Processing</div><div class="ch-relevance">MapReduce, Spark, and why batch pipelines power every large-scale analytics system.</div></div></div>
+        <div class="ch-progress-right"><span class="ch-fraction">0 / 10</span><div class="ch-mini-bar"><div class="ch-mini-fill" style="width:0%"></div></div><span class="ch-chevron">▶</span></div>
+      </summary>
+      <div class="lessons-grid">
+        <div class="lesson-card locked"><div class="card-day">Day 80</div><div class="card-title">Unix Tools and HDFS</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 81</div><div class="card-title">MapReduce and Distributed Filesystems</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 82</div><div class="card-title">MapReduce Workflows</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 83</div><div class="card-title">Reduce-Side Joins and Grouping</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 84</div><div class="card-title">Map-Side Joins</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 85</div><div class="card-title">Output of Batch Workflows</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 86</div><div class="card-title">Hadoop vs Distributed Databases</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 87</div><div class="card-title">Beyond MapReduce: Dataflow Engines</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 88</div><div class="card-title">Graphs and Iterative Processing</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 89</div><div class="card-title">High-Level APIs</div><div class="card-lock">🔒</div></div>
+      </div>
+    </details>
+
+    <!-- CH 11 -->
+    <details class="chapter-block" id="ch11">
+      <summary class="chapter-summary">
+        <div class="ch-left"><div class="ch-num">11</div><div class="ch-info"><div class="ch-label">Chapter 11</div><div class="ch-title">Stream Processing</div><div class="ch-relevance">Kafka, event sourcing, and how to build reactive real-time data pipelines.</div></div></div>
+        <div class="ch-progress-right"><span class="ch-fraction">0 / 10</span><div class="ch-mini-bar"><div class="ch-mini-fill" style="width:0%"></div></div><span class="ch-chevron">▶</span></div>
+      </summary>
+      <div class="lessons-grid">
+        <div class="lesson-card locked"><div class="card-day">Day 90</div><div class="card-title">Intro, Messaging Systems</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 91</div><div class="card-title">Partitioned Logs</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 92</div><div class="card-title">Databases and Streams, Change Data Capture</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 93</div><div class="card-title">Event Sourcing</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 94</div><div class="card-title">State, Streams, and Immutability</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 95</div><div class="card-title">Uses of Stream Processing</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 96</div><div class="card-title">Complex Event Processing, Stream Analytics</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 97</div><div class="card-title">Materialized Views, Stream Joins</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 98</div><div class="card-title">Fault Tolerance in Stream Processing</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 99</div><div class="card-title">Chapter 11 Summary</div><div class="card-lock">🔒</div></div>
+      </div>
+    </details>
+
+    <!-- CH 12 -->
+    <details class="chapter-block" id="ch12">
+      <summary class="chapter-summary">
+        <div class="ch-left"><div class="ch-num">12</div><div class="ch-info"><div class="ch-label">Chapter 12</div><div class="ch-title">The Future of Data Systems</div><div class="ch-relevance">Composing systems, correctness without transactions, and the ethics of data.</div></div></div>
+        <div class="ch-progress-right"><span class="ch-fraction">0 / 10</span><div class="ch-mini-bar"><div class="ch-mini-fill" style="width:0%"></div></div><span class="ch-chevron">▶</span></div>
+      </summary>
+      <div class="lessons-grid">
+        <div class="lesson-card locked"><div class="card-day">Day 100</div><div class="card-title">Data Integration</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 101</div><div class="card-title">Combining Specialized Tools by Deriving Data</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 102</div><div class="card-title">Batch and Stream Processing</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 103</div><div class="card-title">Unbundling Databases</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 104</div><div class="card-title">Designing Applications Around Dataflow</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 105</div><div class="card-title">Observing Derived State</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 106</div><div class="card-title">Aiming for Correctness, Enforcing Constraints</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 107</div><div class="card-title">Timeliness and Integrity</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 108</div><div class="card-title">Trust but Verify</div><div class="card-lock">🔒</div></div>
+        <div class="lesson-card locked"><div class="card-day">Day 109</div><div class="card-title">Ethics, Privacy, Final Book Summary</div><div class="card-lock">🔒</div></div>
+      </div>
+    </details>
+
+  </div>
 </div>
+
+<footer style="border-top:1px solid #30363d;padding:24px;text-align:center;color:#8b949e;font-size:13px">
+  📚 DDIA Daily — One lesson at a time, session by session. &nbsp;|&nbsp; Start with <a href="day-01.html" style="color:#58a6ff;text-decoration:none">Day 1 →</a>
+</footer>
 
 <script>
-// ─── Curriculum Data ──────────────────────────────────────────────────
-const CHAPTERS = [
-  {
-    num: 1, title: "Reliable, Scalable, Maintainable Applications",
-    desc: "The three non-negotiable properties of every data system — and why they conflict.",
-    sessions: [
-      { day:1, title:"Intro — what is DDIA, the three concerns of data systems", done:true },
-      { day:2, title:"Reliability — hardware faults, software errors" },
-      { day:3, title:"Reliability — human errors, importance of reliability" },
-      { day:4, title:"Scalability — describing load and performance" },
-      { day:5, title:"Scalability — coping with load" },
-      { day:6, title:"Maintainability — operability, simplicity, evolvability" }
-    ]
-  },
-  {
-    num: 2, title: "Data Models and Query Languages",
-    desc: "Relational vs. document vs. graph — and why your data model shapes everything downstream.",
-    sessions: [
-      { day:7, title:"Relational model, birth of NoSQL" },
-      { day:8, title:"Object-relational mismatch, many-to-one relationships" },
-      { day:9, title:"Are document DBs repeating history? The network model" },
-      { day:10, title:"Relational model defense, document databases revisited" },
-      { day:11, title:"Relational vs document databases today" },
-      { day:12, title:"Query languages — SQL, MapReduce" },
-      { day:13, title:"Graph-like data models — property graphs, Cypher" },
-      { day:14, title:"Triple-stores, SPARQL, Datalog" }
-    ]
-  },
-  {
-    num: 3, title: "Storage and Retrieval",
-    desc: "How databases store data on disk — LSM-Trees, B-Trees, OLTP vs OLAP, column storage.",
-    sessions: [
-      { day:15, title:"World's simplest database, hash indexes" },
-      { day:16, title:"SSTables intro" },
-      { day:17, title:"LSM-Trees" },
-      { day:18, title:"B-Trees" },
-      { day:19, title:"Comparing B-Trees and LSM-Trees" },
-      { day:20, title:"Other indexing structures, clustered indexes" },
-      { day:21, title:"Multi-column indexes, full-text search, in-memory databases" },
-      { day:22, title:"OLTP vs OLAP" },
-      { day:23, title:"Data warehousing, star and snowflake schemas" },
-      { day:24, title:"Column-oriented storage, column compression" },
-      { day:25, title:"Sort order, writing to column storage, aggregation" }
-    ]
-  },
-  {
-    num: 4, title: "Encoding and Evolution",
-    desc: "How data is serialized for transport — JSON, Thrift, Protobuf, Avro — and why schemas matter.",
-    sessions: [
-      { day:26, title:"JSON, XML, binary encoding" },
-      { day:27, title:"Thrift and Protocol Buffers" },
-      { day:28, title:"Avro" },
-      { day:29, title:"Merits of schemas, dataflow through databases" },
-      { day:30, title:"Dataflow through services — REST and RPC" },
-      { day:31, title:"Message-passing dataflow" }
-    ]
-  },
-  {
-    num: 5, title: "Replication",
-    desc: "Keeping copies of data on multiple machines — leader-follower, multi-leader, leaderless.",
-    sessions: [
-      { day:32, title:"Leaders and followers" },
-      { day:33, title:"Sync vs async replication, setting up new followers" },
-      { day:34, title:"Handling node outages" },
-      { day:35, title:"Implementation of replication logs" },
-      { day:36, title:"Problems with replication lag" },
-      { day:37, title:"Reading your own writes" },
-      { day:38, title:"Monotonic reads, consistent prefix reads" },
-      { day:39, title:"Solutions for replication lag, multi-leader intro" },
-      { day:40, title:"Multi-leader use cases, handling write conflicts" },
-      { day:41, title:"Conflict resolution, multi-leader topologies" },
-      { day:42, title:"Leaderless replication" },
-      { day:43, title:"Quorums, sloppy quorums" }
-    ]
-  },
-  {
-    num: 6, title: "Partitioning",
-    desc: "Splitting large datasets across nodes — range partitioning, hash partitioning, rebalancing.",
-    sessions: [
-      { day:44, title:"Intro, partitioning and replication" },
-      { day:45, title:"Partitioning by key range vs hash" },
-      { day:46, title:"Skewed workloads, document-based secondary indexes" },
-      { day:47, title:"Term-based secondary indexes" },
-      { day:48, title:"Rebalancing strategies" },
-      { day:49, title:"Request routing" }
-    ]
-  },
-  {
-    num: 7, title: "Transactions",
-    desc: "ACID, isolation levels, lost updates, write skew — what 'transaction' actually guarantees.",
-    sessions: [
-      { day:50, title:"Intro, ACID — atomicity and consistency" },
-      { day:51, title:"Isolation, durability, single vs multi-object ops" },
-      { day:52, title:"Handling errors and aborts" },
-      { day:53, title:"Weak isolation — read committed" },
-      { day:54, title:"Snapshot isolation and repeatable read" },
-      { day:55, title:"Implementing snapshot isolation" },
-      { day:56, title:"Preventing lost updates" },
-      { day:57, title:"Write skew and phantoms" },
-      { day:58, title:"Serializability — actual serial execution" },
-      { day:59, title:"Two-phase locking" },
-      { day:60, title:"Serializable snapshot isolation" }
-    ]
-  },
-  {
-    num: 8, title: "The Trouble with Distributed Systems",
-    desc: "Networks, clocks, process pauses — why distributed systems fail in ways single machines never do.",
-    sessions: [
-      { day:61, title:"Faults and partial failures" },
-      { day:62, title:"Unreliable networks" },
-      { day:63, title:"Detecting faults, timeouts, unbounded delays" },
-      { day:64, title:"Synchronous vs async networks" },
-      { day:65, title:"Unreliable clocks — monotonic vs time-of-day" },
-      { day:66, title:"Clock sync, timestamps for ordering events" },
-      { day:67, title:"Process pauses, knowledge, truth and lies" },
-      { day:68, title:"Byzantine generals, system models" }
-    ]
-  },
-  {
-    num: 9, title: "Consistency and Consensus",
-    desc: "Linearizability, CAP theorem, Paxos, Raft — the hardest problems in distributed systems.",
-    sessions: [
-      { day:69, title:"Linearizability" },
-      { day:70, title:"What makes a system linearizable?" },
-      { day:71, title:"Relying on linearizability, implementing it" },
-      { day:72, title:"Cost of linearizability, CAP theorem" },
-      { day:73, title:"Ordering guarantees, sequence number ordering" },
-      { day:74, title:"Lamport timestamps" },
-      { day:75, title:"Total order broadcast" },
-      { day:76, title:"Distributed transactions, two-phase commit" },
-      { day:77, title:"Distributed transactions in practice" },
-      { day:78, title:"Fault-tolerant consensus algorithms" },
-      { day:79, title:"Membership and coordination services" }
-    ]
-  },
-  {
-    num: 10, title: "Batch Processing",
-    desc: "MapReduce, Hadoop, dataflow engines — how to process massive datasets offline.",
-    sessions: [
-      { day:80, title:"Unix tools and HDFS" },
-      { day:81, title:"MapReduce and distributed filesystems" },
-      { day:82, title:"MapReduce workflows" },
-      { day:83, title:"Reduce-side joins and grouping" },
-      { day:84, title:"Map-side joins" },
-      { day:85, title:"Output of batch workflows" },
-      { day:86, title:"Hadoop vs distributed databases" },
-      { day:87, title:"Beyond MapReduce — dataflow engines" },
-      { day:88, title:"Graphs and iterative processing" },
-      { day:89, title:"High-level APIs" }
-    ]
-  },
-  {
-    num: 11, title: "Stream Processing",
-    desc: "Kafka, event sourcing, CDC, stream joins — processing data as it arrives.",
-    sessions: [
-      { day:90, title:"Intro, messaging systems" },
-      { day:91, title:"Partitioned logs" },
-      { day:92, title:"Databases and streams, change data capture" },
-      { day:93, title:"Event sourcing" },
-      { day:94, title:"State, streams, and immutability" },
-      { day:95, title:"Uses of stream processing" },
-      { day:96, title:"Complex event processing, stream analytics" },
-      { day:97, title:"Materialized views, stream joins" },
-      { day:98, title:"Fault tolerance" },
-      { day:99, title:"Summary" }
-    ]
-  },
-  {
-    num: 12, title: "The Future of Data Systems",
-    desc: "Unbundling databases, correctness, ethics — how to think about building data systems in the real world.",
-    sessions: [
-      { day:100, title:"Data integration" },
-      { day:101, title:"Combining specialized tools by deriving data" },
-      { day:102, title:"Batch and stream processing" },
-      { day:103, title:"Unbundling databases" },
-      { day:104, title:"Designing applications around dataflow" },
-      { day:105, title:"Observing derived state" },
-      { day:106, title:"Aiming for correctness, enforcing constraints" },
-      { day:107, title:"Timeliness and integrity" },
-      { day:108, title:"Trust but verify" },
-      { day:109, title:"Ethics, privacy, final book summary" }
-    ]
-  }
-];
-
-// ─── Count completed sessions ──────────────────────────────────────────
-const totalDone = CHAPTERS.reduce((a, ch) => a + ch.sessions.filter(s => s.done).length, 0);
-document.getElementById('statDone').textContent = totalDone;
-document.getElementById('statPct').textContent = (totalDone/109*100).toFixed(1)+'%';
-document.getElementById('heroProgressLabel').textContent = totalDone + ' / 109';
-setTimeout(() => { document.getElementById('heroProgressFill').style.width = (totalDone/109*100).toFixed(2)+'%'; }, 400);
-
-// ─── Build Chapter Sections ────────────────────────────────────────────
-const root = document.getElementById('chaptersRoot');
-const jumpNav = document.getElementById('chapterJump');
-
-CHAPTERS.forEach((ch, ci) => {
-  const done = ch.sessions.filter(s => s.done).length;
-  const total = ch.sessions.length;
-  const hasDone = done > 0;
-
-  // Sidebar jump link
-  const jLink = document.createElement('a');
-  jLink.href = '#ch-'+ch.num;
-  jLink.innerHTML = `<span>Ch ${ch.num} — ${ch.title.split(' ').slice(0,3).join(' ')}…</span><span class="cj-done">${done}/${total}</span>`;
-  jumpNav.appendChild(jLink);
-
-  // Chapter details element
-  const det = document.createElement('details');
-  det.id = 'ch-'+ch.num;
-  det.className = 'chapter-section';
-  if (hasDone) det.open = true;
-
-  det.innerHTML = `
-    <summary class="chapter-summary">
-      <div class="ch-left">
-        <div class="ch-num">Ch ${ch.num}</div>
-        <div>
-          <div class="ch-title">${ch.title}</div>
-          <div class="ch-desc">${ch.desc}</div>
-        </div>
-      </div>
-      <div class="ch-right">
-        <div class="ch-progress-pill ${hasDone ? 'has-done' : ''}">${done} / ${total} complete</div>
-        <div class="ch-arrow">▶</div>
-      </div>
-    </summary>
-    <div class="chapter-body">
-      <div class="card-grid" id="grid-ch${ch.num}"></div>
-    </div>
-  `;
-  root.appendChild(det);
-
-  // Build session cards
-  const grid = det.querySelector('#grid-ch'+ch.num);
-  ch.sessions.forEach((sess, si) => {
-    const dayPad = String(sess.day).padStart(2,'0');
-    const card = document.createElement(sess.done ? 'a' : 'div');
-    card.className = 'lesson-card ' + (sess.done ? 'done' : 'locked');
-    if (sess.done) card.href = `day-${dayPad}.html`;
-    card.dataset.search = `day ${sess.day} ${sess.title}`.toLowerCase();
-    card.innerHTML = `
-      <div class="card-day">
-        ${sess.done ? '<span class="done-dot"></span>' : '<span class="lock-icon">🔒</span>'}
-        Day ${sess.day}
-      </div>
-      <div class="card-title">${sess.title}</div>
-    `;
-    if (sess.done) {
-      card.style.animationDelay = (si * 60) + 'ms';
-      card.classList.add('animate-in');
-    }
-    grid.appendChild(card);
-  });
-});
-
-// ─── Scroll fade-in for chapter sections ──────────────────────────────
-const chObs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.05 });
-document.querySelectorAll('.chapter-section').forEach(el => chObs.observe(el));
-
-// ─── Search ───────────────────────────────────────────────────────────
-function doSearch() {
-  const q = document.getElementById('searchInput').value.trim().toLowerCase();
-  let anyVisible = false;
-  document.querySelectorAll('.chapter-section').forEach(det => {
-    const cards = det.querySelectorAll('.lesson-card');
-    let chVisible = false;
-    cards.forEach(card => {
-      const match = !q || card.dataset.search.includes(q);
-      card.style.display = match ? '' : 'none';
-      if (match) chVisible = true;
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => { document.getElementById('heroPF').style.width = '0.92%'; }, 400);
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.05 });
+  document.querySelectorAll('.chapter-block').forEach(b => obs.observe(b));
+  const doneObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.lesson-card.done').forEach((c, i) => setTimeout(() => c.classList.add('visible'), i * 80));
+        doneObs.unobserve(e.target);
+      }
     });
-    det.style.display = chVisible ? '' : 'none';
-    if (chVisible) { det.open = true; anyVisible = true; }
-  });
-  document.getElementById('noResults').style.display = anyVisible || !q ? 'none' : 'block';
-}
-
-// Smooth scroll for jump links
-document.querySelectorAll('.chapter-jump a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
-    e.preventDefault();
-    const t = document.querySelector(a.getAttribute('href'));
-    if (t) { t.open = true; t.scrollIntoView({ behavior:'smooth', block:'start' }); }
-  });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.lessons-grid').forEach(g => doneObs.observe(g));
 });
+
+const allLessons = [
+  { day:1,  title:"What Is a Data-Intensive Application? The Three Concerns", ch:"Ch 1", file:"day-01.html" },
+  { day:2,  title:"Reliability: Hardware Faults & Software Errors",           ch:"Ch 1", file:null },
+  { day:3,  title:"Reliability: Human Errors & Importance of Reliability",    ch:"Ch 1", file:null },
+  { day:4,  title:"Scalability: Describing Load and Performance",              ch:"Ch 1", file:null },
+  { day:5,  title:"Scalability: Coping with Load",                            ch:"Ch 1", file:null },
+  { day:6,  title:"Maintainability: Operability, Simplicity, Evolvability",   ch:"Ch 1", file:null },
+  { day:7,  title:"Relational Model, Birth of NoSQL",                         ch:"Ch 2", file:null },
+  { day:8,  title:"Object-Relational Mismatch, Many-to-One",                  ch:"Ch 2", file:null },
+  { day:15, title:"World's Simplest Database, Hash Indexes",                  ch:"Ch 3", file:null },
+  { day:17, title:"LSM-Trees",                                                ch:"Ch 3", file:null },
+  { day:18, title:"B-Trees",                                                  ch:"Ch 3", file:null },
+  { day:19, title:"Comparing B-Trees and LSM-Trees",                          ch:"Ch 3", file:null },
+  { day:22, title:"OLTP vs OLAP",                                             ch:"Ch 3", file:null },
+  { day:24, title:"Column-Oriented Storage, Column Compression",              ch:"Ch 3", file:null },
+  { day:32, title:"Leaders and Followers (Replication)",                      ch:"Ch 5", file:null },
+  { day:36, title:"Problems with Replication Lag",                            ch:"Ch 5", file:null },
+  { day:50, title:"Transactions: Intro, ACID",                                ch:"Ch 7", file:null },
+  { day:54, title:"Snapshot Isolation and Repeatable Read",                   ch:"Ch 7", file:null },
+  { day:59, title:"Two-Phase Locking",                                        ch:"Ch 7", file:null },
+  { day:61, title:"Faults and Partial Failures",                              ch:"Ch 8", file:null },
+  { day:62, title:"Unreliable Networks",                                      ch:"Ch 8", file:null },
+  { day:69, title:"Linearizability",                                          ch:"Ch 9", file:null },
+  { day:72, title:"Cost of Linearizability, CAP Theorem",                     ch:"Ch 9", file:null },
+  { day:76, title:"Distributed Transactions, Two-Phase Commit",               ch:"Ch 9", file:null },
+  { day:81, title:"MapReduce and Distributed Filesystems",                    ch:"Ch 10", file:null },
+  { day:90, title:"Stream Processing: Intro, Messaging Systems",              ch:"Ch 11", file:null },
+  { day:92, title:"Change Data Capture",                                      ch:"Ch 11", file:null },
+  { day:93, title:"Event Sourcing",                                           ch:"Ch 11", file:null },
+];
+const inp = document.getElementById('searchInput');
+const res = document.getElementById('searchResults');
+inp.addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  res.innerHTML = '';
+  if (q.length < 2) { res.style.display = 'none'; return; }
+  const hits = allLessons.filter(l => l.title.toLowerCase().includes(q) || l.ch.toLowerCase().includes(q));
+  if (!hits.length) { res.style.display = 'none'; return; }
+  hits.slice(0,8).forEach(l => {
+    const el = document.createElement(l.file ? 'a' : 'div');
+    el.className = 'search-result-item';
+    if (l.file) el.href = l.file; else el.style.opacity = '0.45';
+    el.innerHTML = `<span class="sr-day">Day ${l.day}</span><span class="sr-title">${l.title}</span><span class="sr-ch">${l.ch}</span>`;
+    res.appendChild(el);
+  });
+  res.style.display = 'block';
+});
+document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) res.style.display = 'none'; });
 </script>
 </body>
 </html>
