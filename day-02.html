@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 2 — Reliability: Hardware Faults & Software Errors | DDIA Daily</title>
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: #0d1117; color: #e6edf3;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px; line-height: 1.7;
+}
+/* ── Navbar ── */
+.navbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #161b22; border-bottom: 1px solid #30363d;
+  padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 24px;
+}
+.nav-logo { font-weight: 700; font-size: 1rem; color: #58a6ff; text-decoration: none; white-space: nowrap; }
+.nav-logo:hover { color: #79c0ff; }
+.nav-chapters { position: relative; }
+.nav-chapters-btn {
+  background: none; border: 1px solid #30363d; border-radius: 6px;
+  color: #8b949e; padding: 5px 12px; font-size: 13px; cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+.nav-chapters-btn:hover { border-color: #58a6ff; color: #e6edf3; }
+.chapters-dropdown {
+  display: none; position: absolute; top: 38px; left: 0;
+  background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+  min-width: 280px; padding: 8px 0; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.6);
+}
+.chapters-dropdown.open { display: block; }
+.chapters-dropdown a { display: block; padding: 8px 16px; font-size: 13px; color: #8b949e; text-decoration: none; transition: background .15s, color .15s; }
+.chapters-dropdown a:hover { background: #21262d; color: #e6edf3; }
+.chapters-dropdown a.current { color: #58a6ff; }
+.nav-search {
+  margin-left: auto; color: #8b949e; text-decoration: none; font-size: 13px;
+  border: 1px solid #30363d; border-radius: 6px; padding: 5px 12px; transition: border-color .2s, color .2s;
+}
+.nav-search:hover { border-color: #58a6ff; color: #e6edf3; }
+/* ── Header ── */
+.page-header {
+  background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+  border-bottom: 1px solid #30363d; padding: 40px 24px 32px;
+}
+.page-header-inner { max-width: 1100px; margin: 0 auto; }
+.day-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #1c2128; border: 1px solid #30363d; border-radius: 20px;
+  padding: 4px 14px; font-size: 12px; font-weight: 600; color: #58a6ff; margin-bottom: 16px;
+  animation: badgeGlow 3s ease-in-out infinite;
+}
+@keyframes badgeGlow { 0%,100% { box-shadow: 0 0 0 rgba(88,166,255,0); } 50% { box-shadow: 0 0 14px rgba(88,166,255,.35); } }
+.chapter-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #3fb950; margin-bottom: 8px; }
+.page-title { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; color: #e6edf3; line-height: 1.2; margin-bottom: 8px; }
+.page-subtitle { font-size: 1rem; color: #8b949e; margin-bottom: 24px; }
+.progress-wrap { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 12px 16px; }
+.progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: #8b949e; margin-bottom: 6px; }
+.progress-track { background: #21262d; border-radius: 4px; height: 6px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #58a6ff, #3fb950); border-radius: 4px; width: 0; transition: width 1.2s ease; }
+/* ── Layout ── */
+.page-body { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
+.page-layout { display: grid; grid-template-columns: 1fr 300px; gap: 32px; align-items: start; }
+@media (max-width: 800px) { .page-layout { grid-template-columns: 1fr; } .sidebar { display: none; } }
+/* ── Sidebar ── */
+.sidebar { position: sticky; top: 72px; }
+.sidebar-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.sidebar-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #8b949e; margin-bottom: 12px; }
+.toc-link { display: block; padding: 5px 8px; font-size: 13px; color: #8b949e; text-decoration: none; border-radius: 5px; border-left: 2px solid transparent; transition: background .15s, color .15s, border-color .15s; }
+.toc-link:hover { background: #21262d; color: #e6edf3; }
+.toc-link.active { background: #1c2128; color: #58a6ff; border-left-color: #58a6ff; }
+.related-pill { display: inline-block; padding: 3px 10px; font-size: 12px; font-weight: 500; background: #1c2128; border: 1px solid #30363d; border-radius: 12px; color: #58a6ff; text-decoration: none; margin: 3px; transition: background .15s; }
+.related-pill:hover { background: #21262d; }
+.coming-pill { display: inline-block; padding: 3px 10px; font-size: 12px; background: #161b22; border: 1px solid #21262d; border-radius: 12px; color: #484f58; margin: 3px; }
+.interview-box { font-size: 13px; color: #8b949e; line-height: 1.5; border-left: 3px solid #d29922; padding-left: 10px; }
+/* ── Section Cards ── */
+.section-card {
+  background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 28px; margin-bottom: 24px;
+  opacity: 0; transform: translateY(20px); transition: opacity .5s ease, transform .5s ease, box-shadow .2s;
+}
+.section-card.visible { opacity: 1; transform: translateY(0); }
+.section-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.35); }
+.section-icon { font-size: 1.4rem; margin-bottom: 8px; }
+.section-title { font-size: 1.2rem; font-weight: 700; color: #e6edf3; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #21262d; }
+p { margin-bottom: 12px; color: #c9d1d9; }
+p:last-child { margin-bottom: 0; }
+strong { color: #e6edf3; }
+em { color: #79c0ff; font-style: normal; }
+ul, ol { padding-left: 20px; margin-bottom: 12px; color: #c9d1d9; }
+li { margin-bottom: 6px; }
+li strong { color: #e6edf3; }
+h3 { font-size: 1rem; font-weight: 700; color: #e6edf3; margin: 20px 0 10px; }
+/* ── Code blocks ── */
+.code-block {
+  background: #0d1117; border: 1px solid #30363d; border-left: 4px solid #58a6ff; border-radius: 6px;
+  padding: 16px; font-family: 'Courier New', monospace; font-size: 13px; color: #e6edf3; margin: 16px 0;
+  overflow-x: auto; line-height: 1.6; animation: codePulse 4s ease-in-out infinite;
+}
+@keyframes codePulse { 0%,100% { border-left-color: #58a6ff; } 50% { border-left-color: #79c0ff; } }
+.code-block .cmt { color: #8b949e; }
+.code-block .hl { color: #f0883e; }
+.code-block .ok { color: #3fb950; }
+.code-block .bad { color: #f85149; }
+/* ── SDE2 / Interview cards ── */
+.sde2-card { background: #0d1f0e; border: 1px solid #1a4a1f; border-left: 4px solid #3fb950; border-radius: 10px; padding: 20px; }
+.interview-card { background: #1a1700; border: 1px solid #3a3000; border-left: 4px solid #d29922; border-radius: 10px; padding: 20px; }
+/* ── Stat tiles ── */
+.stat-tiles { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 16px; }
+@media (max-width: 600px) { .stat-tiles { grid-template-columns: 1fr; } }
+.stat-tile { border-radius: 10px; padding: 18px; text-align: center; border: 1px solid; }
+.stat-tile.red { background: #1a0d0d; border-color: #f85149; }
+.stat-tile.blue { background: #0f1420; border-color: #58a6ff; }
+.stat-tile.yellow { background: #1a1200; border-color: #d29922; }
+.stat-num { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; }
+.stat-tile.red .stat-num { color: #f85149; }
+.stat-tile.blue .stat-num { color: #58a6ff; }
+.stat-tile.yellow .stat-num { color: #d29922; }
+.stat-cap { font-size: 12px; color: #8b949e; line-height: 1.4; }
+/* ── Animated SVG ── */
+.svg-container { background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 12px; margin: 20px 0; overflow: hidden; }
+.svg-container svg { width: 100%; height: auto; display: block; }
+.flow-line { fill: none; stroke: #58a6ff; stroke-width: 2; stroke-dasharray: 8 4; animation: flowMove 1.8s linear infinite; }
+.flow-line-green { fill: none; stroke: #3fb950; stroke-width: 2; stroke-dasharray: 8 4; animation: flowMove 2.2s linear infinite; }
+@keyframes flowMove { from { stroke-dashoffset: 48; } to { stroke-dashoffset: 0; } }
+@keyframes diskFail { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+.disk-failed { animation: diskFail 1.2s ease-in-out infinite; }
+@keyframes pulseGreen { 0%,100% { opacity: 1; } 50% { opacity: .7; } }
+.node-active { animation: pulseGreen 2s ease-in-out infinite; }
+/* ── Step-through ── */
+.step-container { background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 20px; margin: 20px 0; }
+.step-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+.step-title { font-weight: 700; color: #58a6ff; font-size: 1rem; }
+.step-controls { display: flex; gap: 8px; align-items: center; }
+.step-btn { background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: #e6edf3; padding: 6px 14px; font-size: 13px; cursor: pointer; transition: background .15s, border-color .15s; }
+.step-btn:hover:not(:disabled) { background: #2d333b; border-color: #58a6ff; }
+.step-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.step-btn.primary { background: #1c3a5e; border-color: #58a6ff; color: #58a6ff; }
+.step-btn.primary:hover:not(:disabled) { background: #1f4a7a; }
+.step-indicator { font-size: 12px; color: #8b949e; }
+.step-visual { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; margin-bottom: 14px; min-height: 150px; }
+.step-panel { display: none; }
+.step-panel.active { display: block; }
+.step-node { display: inline-flex; align-items: center; padding: 7px 13px; border-radius: 8px; font-size: 13px; font-weight: 600; margin: 4px; border: 2px solid #30363d; background: #0d1117; color: #8b949e; transition: all .3s; }
+.step-node.highlight { border-color: #58a6ff; color: #58a6ff; box-shadow: 0 0 12px rgba(88,166,255,.35); background: #0f1a2e; }
+.step-node.problem { border-color: #f85149; color: #f85149; box-shadow: 0 0 12px rgba(248,81,73,.35); background: #1a0d0d; }
+.step-node.solved { border-color: #3fb950; color: #3fb950; box-shadow: 0 0 10px rgba(63,185,80,.25); background: #0d1a0e; }
+.step-arrow { color: #58a6ff; font-size: 18px; margin: 0 2px; }
+.step-arrow.problem { color: #f85149; }
+.step-desc { background: #1c2128; border-radius: 8px; padding: 14px 16px; font-size: 14px; color: #c9d1d9; line-height: 1.6; border-left: 3px solid #58a6ff; }
+.step-desc.problem-desc { border-left-color: #f85149; }
+.step-desc.solved-desc { border-left-color: #3fb950; }
+.step-desc.warn-desc { border-left-color: #d29922; }
+.step-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
+.step-col { display: flex; flex-direction: column; gap: 6px; }
+/* ── Fleet calculator ── */
+.calc-box { background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 20px; margin: 20px 0; }
+.calc-slider-row { margin-bottom: 18px; }
+.calc-slider-label { display: flex; justify-content: space-between; font-size: 13px; color: #c9d1d9; margin-bottom: 8px; }
+.calc-slider-label strong { color: #58a6ff; font-size: 15px; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: #21262d; border-radius: 3px; outline: none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #58a6ff; cursor: pointer; box-shadow: 0 0 8px rgba(88,166,255,.5); }
+input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #58a6ff; cursor: pointer; border: none; box-shadow: 0 0 8px rgba(88,166,255,.5); }
+.calc-results { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 8px; }
+@media (max-width: 600px) { .calc-results { grid-template-columns: 1fr; } }
+.calc-result { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px; text-align: center; }
+.calc-result-num { font-size: 1.5rem; font-weight: 800; color: #58a6ff; transition: color .3s; }
+.calc-result-num.danger { color: #f85149; }
+.calc-result-cap { font-size: 11px; color: #8b949e; margin-top: 4px; }
+.calc-verdict { margin-top: 16px; padding: 12px 16px; border-radius: 8px; font-size: 14px; line-height: 1.5; border-left: 3px solid #58a6ff; background: #1c2128; transition: all .3s; }
+.calc-verdict.danger { border-left-color: #f85149; }
+/* ── Trade-off radar ── */
+.tradeoff-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 20px 0; align-items: start; }
+@media (max-width: 640px) { .tradeoff-container { grid-template-columns: 1fr; } }
+.radar-wrap { background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 12px; }
+.preset-buttons { display: flex; flex-direction: column; gap: 10px; }
+.preset-btn { padding: 12px 16px; border-radius: 8px; border: 2px solid #30363d; background: #161b22; color: #8b949e; font-size: 13px; font-weight: 600; cursor: pointer; text-align: left; transition: all .2s; line-height: 1.4; }
+.preset-btn:hover { border-color: #58a6ff; color: #e6edf3; background: #1c2128; }
+.preset-btn.active { border-color: #58a6ff; color: #58a6ff; background: #0f1a2e; }
+.preset-name { font-size: 14px; margin-bottom: 3px; }
+.preset-desc { font-size: 12px; color: #8b949e; font-weight: 400; }
+.radar-tooltip { background: #1c2128; border: 1px solid #30363d; border-radius: 8px; padding: 12px; font-size: 13px; color: #c9d1d9; margin-top: 10px; min-height: 56px; display: none; line-height: 1.5; }
+/* ── Flip cards ── */
+.flip-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 16px; }
+.flip-card { height: 200px; perspective: 1000px; cursor: pointer; }
+.flip-inner { width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.4,0,.2,1); position: relative; }
+.flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+.flip-front, .flip-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; justify-content: center; }
+.flip-front { background: #1a0d0d; border: 1px solid #f85149; }
+.flip-back { background: #0d1a0e; border: 1px solid #3fb950; transform: rotateY(180deg); }
+.flip-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+.flip-front .flip-label { color: #f85149; }
+.flip-back .flip-label { color: #3fb950; }
+.flip-text { font-size: 13px; line-height: 1.55; color: #e6edf3; }
+.flip-hint { font-size: 11px; color: #484f58; margin-top: 10px; }
+/* ── Timeline ── */
+.timeline { position: relative; padding-left: 28px; margin-top: 16px; }
+.timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, #f85149, #d29922, #58a6ff, #3fb950); }
+.timeline-item { position: relative; margin-bottom: 24px; opacity: 0; transform: translateX(-12px); transition: opacity .45s ease, transform .45s ease; }
+.timeline-item.visible { opacity: 1; transform: translateX(0); }
+.timeline-dot { position: absolute; left: -24px; top: 5px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #0d1117; box-shadow: 0 0 8px currentColor; }
+.timeline-year { font-size: 11px; font-weight: 700; color: #58a6ff; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+.timeline-content { font-size: 14px; color: #c9d1d9; line-height: 1.6; }
+.timeline-content strong { color: #e6edf3; }
+/* ── Table ── */
+.compare-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 16px 0; }
+.compare-table th { background: #21262d; color: #e6edf3; padding: 10px 14px; text-align: left; font-weight: 600; border: 1px solid #30363d; }
+.compare-table td { padding: 10px 14px; border: 1px solid #30363d; color: #c9d1d9; vertical-align: top; }
+.compare-table tr:nth-child(even) td { background: #161b22; }
+.compare-table tr:nth-child(odd) td { background: #0d1117; }
+.badge-g { display:inline-block;padding:1px 8px;border-radius:12px;background:#0d3b14;border:1px solid #3fb950;color:#3fb950;font-size:12px; }
+.badge-r { display:inline-block;padding:1px 8px;border-radius:12px;background:#3b0d0d;border:1px solid #f85149;color:#f85149;font-size:12px; }
+.badge-y { display:inline-block;padding:1px 8px;border-radius:12px;background:#3b2d00;border:1px solid #d29922;color:#d29922;font-size:12px; }
+/* ── Takeaways ── */
+.takeaway-list { list-style: none; padding: 0; margin-top: 16px; }
+.takeaway-list li { display: flex; gap: 14px; align-items: flex-start; background: #1c2128; border: 1px solid #30363d; border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; opacity: 0; transform: translateY(10px); transition: opacity .4s ease, transform .4s ease; }
+.takeaway-list li.visible { opacity: 1; transform: translateY(0); }
+.takeaway-num { min-width: 28px; height: 28px; border-radius: 50%; background: #58a6ff; color: #0d1117; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.takeaway-text { font-size: 14px; color: #c9d1d9; line-height: 1.55; }
+.takeaway-text strong { color: #e6edf3; }
+/* ── Details ── */
+details { background: #1c2128; border: 1px solid #30363d; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+summary { font-weight: 600; color: #58a6ff; cursor: pointer; font-size: 14px; list-style: none; }
+summary::before { content: '▶  '; font-size: 10px; transition: transform .2s; display:inline-block; }
+details[open] summary::before { transform: rotate(90deg); }
+.answer-body { margin-top: 12px; padding-top: 12px; border-top: 1px solid #30363d; }
+.answer-body p { font-size: 14px; }
+.answer-body ul { font-size: 14px; }
+/* ── Quiz ── */
+.quiz-wrap { background: #1c2128; border: 1px solid #30363d; border-radius: 8px; padding: 16px; margin-bottom: 14px; }
+.quiz-question { font-size: 14px; font-weight: 600; color: #e6edf3; margin-bottom: 12px; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-option { padding: 9px 12px; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; color: #c9d1d9; font-size: 14px; cursor: pointer; transition: all .15s; text-align: left; }
+.quiz-option:hover:not(:disabled) { border-color: #58a6ff; color: #e6edf3; }
+.quiz-option.correct { border-color: #3fb950; background: #0d1a0e; color: #3fb950; }
+.quiz-option.wrong { border-color: #f85149; background: #1a0d0d; color: #f85149; }
+.quiz-feedback { font-size: 13px; padding: 9px 12px; border-radius: 6px; margin-top: 10px; display: none; line-height: 1.5; }
+.quiz-feedback.show { display: block; }
+.quiz-feedback.correct { background: #0d3b14; border: 1px solid #3fb950; color: #3fb950; }
+.quiz-feedback.wrong { background: #3b0d0d; border: 1px solid #f85149; color: #f85149; }
+/* ── Connections ── */
+.connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 16px; }
+.connection-card { background: #1c2128; border: 1px solid #30363d; border-radius: 8px; padding: 14px; text-decoration: none; transition: border-color .2s, background .2s; display: block; }
+.connection-card.live:hover { border-color: #58a6ff; background: #21262d; }
+.connection-card.locked { opacity: .45; cursor: default; }
+.connection-day { font-size: 11px; color: #58a6ff; font-weight: 700; margin-bottom: 4px; }
+.connection-topic { font-size: 14px; color: #e6edf3; font-weight: 600; }
+.connection-why { font-size: 12px; color: #8b949e; margin-top: 4px; }
+/* ── Preview ── */
+.preview-card { background: linear-gradient(135deg, #0f1a2e, #161b22); border: 1px solid #58a6ff; border-radius: 10px; padding: 20px; }
+.preview-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #58a6ff; margin-bottom: 8px; }
+.preview-text { font-size: 15px; color: #e6edf3; font-weight: 500; line-height: 1.5; }
+@media (max-width: 600px) { .page-header { padding: 24px 16px 20px; } .page-body { padding: 16px 16px 60px; } .section-card { padding: 18px; } .section-title { font-size: 1.05rem; } }
+</style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ══ -->
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">📚 DDIA Daily</a>
+  <div class="nav-chapters">
+    <button class="nav-chapters-btn" onclick="toggleDropdown()">Chapters ▾</button>
+    <div class="chapters-dropdown" id="chaptersDropdown">
+      <a href="day-01.html" class="current">Ch 1 — Reliable, Scalable, Maintainable (Day 1)</a>
+      <a href="#" style="color:#484f58;cursor:default">Ch 2 — Data Models (Day 7)</a>
+      <a href="#" style="color:#484f58;cursor:default">Ch 3 — Storage &amp; Retrieval (Day 15)</a>
+      <a href="#" style="color:#484f58;cursor:default">Ch 4 — Encoding (Day 26)</a>
+      <a href="#" style="color:#484f58;cursor:default">Ch 5 — Replication (Day 32)</a>
+      <a href="#" style="color:#484f58;cursor:default">Ch 6 — Partitioning (Day 44)</a>
+      <a href="#" style="color:#484f58;cursor:default">Ch 7 — Transactions (Day 50)</a>
+      <a href="#" style="color:#484f58;cursor:default">Ch 8 — Distributed Trouble (Day 61)</a>
+      <a href="#" style="color:#484f58;cursor:default">Ch 9 — Consistency (Day 69)</a>
+      <a href="#" style="color:#484f58;cursor:default">Ch 10 — Batch Processing (Day 80)</a>
+      <a href="#" style="color:#484f58;cursor:default">Ch 11 — Stream Processing (Day 90)</a>
+      <a href="#" style="color:#484f58;cursor:default">Ch 12 — Future (Day 100)</a>
+    </div>
+  </div>
+  <a class="nav-search" href="index.html#search">🔍 Search</a>
+</nav>
+
+<!-- ══ HEADER ══ -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="day-badge">✦ Day 2 of 109</div>
+    <div class="chapter-label">Chapter 1 — Reliable, Scalable, Maintainable Applications</div>
+    <h1 class="page-title">Reliability: Hardware Faults &amp; Software Errors</h1>
+    <p class="page-subtitle">Why "it works on my machine" stops being true the moment you have 10,000 machines.</p>
+    <div class="progress-wrap">
+      <div class="progress-meta"><span>Course Progress</span><span>2 / 109 sessions</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BODY ══ -->
+<div class="page-body">
+  <div class="page-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-title">On This Page</div>
+        <a class="toc-link" href="#hook">🌩 3 AM Page</a>
+        <a class="toc-link" href="#the-what">📖 Fault vs Failure</a>
+        <a class="toc-link" href="#analogy">✈️ The Analogy</a>
+        <a class="toc-link" href="#how-it-works">⚙️ How It Works</a>
+        <a class="toc-link" href="#tradeoffs">⚖️ Trade-offs</a>
+        <a class="toc-link" href="#in-the-wild">🌍 In the Wild</a>
+        <a class="toc-link" href="#sde2-lens">🔬 SDE 2 Lens</a>
+        <a class="toc-link" href="#system-design">🎯 Interview Playbook</a>
+        <a class="toc-link" href="#misconceptions">⚠️ Misconceptions</a>
+        <a class="toc-link" href="#interactive">🤔 Interactive</a>
+        <a class="toc-link" href="#connections">🔗 Connections</a>
+        <a class="toc-link" href="#takeaways">✅ Takeaways</a>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">🔗 Related Sessions</div>
+        <a class="related-pill" href="day-01.html">Day 1 — Three Concerns</a>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">🔒 Coming Up</div>
+        <span class="coming-pill">Day 3 — Human Errors</span><br>
+        <span class="coming-pill">Day 32 — Replication</span><br>
+        <span class="coming-pill">Day 34 — Node Outages</span><br>
+        <span class="coming-pill">Day 61 — Partial Failures</span>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">🎯 Interview Relevance</div>
+        <div class="interview-box">"What happens when X fails?" is asked in every system design interview. Distinguishing independent hardware faults from correlated software faults is a senior-level signal.</div>
+      </div>
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <main>
+
+      <!-- HOOK -->
+      <section class="section-card" id="hook">
+        <div class="section-icon">🌩️</div>
+        <h2 class="section-title">3:14 AM — Your Pager Goes Off</h2>
+        <p>You're on call. The dashboard is red. A disk in one of your database servers has failed — a single physical component, in a single machine, in a rack you've never physically seen. Annoying, but fine: hardware dies, that's expected. You replace it.</p>
+        <p>Then you do the math that every engineer eventually does. Your service runs on a fleet. A single enterprise hard drive has a <strong>mean time to failure (MTTF) of about 10–50 years</strong>. Sounds reassuring — until you remember you don't have <em>one</em> disk. You have thousands.</p>
+        <p>With <strong>10,000 disks</strong>, that 10–50 year MTTF translates to roughly <strong>one disk death every single day</strong>. The thing you treated as a rare, surprising event at 3 AM isn't rare at all. At scale, hardware failure isn't an exception — <strong>it's the steady-state condition your system lives in.</strong></p>
+        <div class="stat-tiles">
+          <div class="stat-tile red"><div class="stat-num">~1/day</div><div class="stat-cap">Disk failures across a 10,000-disk fleet</div></div>
+          <div class="stat-tile yellow"><div class="stat-num">2–4%</div><div class="stat-cap">Annualized disk failure rate (Backblaze data)</div></div>
+          <div class="stat-tile blue"><div class="stat-num">∞</div><div class="stat-cap">Times a software bug can fire — on every node at once</div></div>
+        </div>
+        <p style="margin-top:16px">Today we split "things going wrong" into two fundamentally different beasts: <strong>hardware faults</strong> (random, independent, and — counterintuitively — the <em>easy</em> kind) and <strong>software errors</strong> (systematic, correlated, and the kind that takes down your whole fleet in one shot). Knowing the difference changes how you design everything.</p>
+      </section>
+
+      <!-- THE WHAT -->
+      <section class="section-card" id="the-what">
+        <div class="section-icon">📖</div>
+        <h2 class="section-title">Fault vs Failure — The Distinction That Matters</h2>
+        <p>DDIA gives us two words that engineers often use interchangeably but absolutely should not:</p>
+        <ul>
+          <li><strong>Fault:</strong> one <em>component</em> deviating from its spec. A disk stops responding. A process crashes. A network packet is dropped. Faults are local and expected.</li>
+          <li><strong>Failure:</strong> the <em>system as a whole</em> stops providing the service users need. The app is down. Data is lost. Requests time out.</li>
+        </ul>
+        <p>The entire discipline of reliability engineering boils down to one goal: <strong>prevent faults from cascading into failures.</strong> You cannot stop disks from dying or cosmic rays from flipping bits in RAM. What you <em>can</em> do is design a system where a fault stays contained — a tree falls in the forest and the forest keeps standing.</p>
+        <p>Kleppmann makes a deliberately counterintuitive point: it can be worth <em>increasing</em> the rate of faults to reduce the rate of failures. Netflix's Chaos Monkey kills random servers on purpose. Why? Because deliberately triggering faults during business hours forces engineers to build systems that tolerate them — so a real fault at 3 AM is a non-event.</p>
+        <h3>Two Categories of "Things Going Wrong"</h3>
+        <table class="compare-table">
+          <tr><th>Dimension</th><th>Hardware Faults</th><th>Software Errors</th></tr>
+          <tr><td><strong>Cause</strong></td><td>Physical: disk crash, RAM bit-flip, power loss, unplugged cable</td><td>Logical: bugs, bad input, resource leaks, cascading retries</td></tr>
+          <tr><td><strong>Correlation</strong></td><td><span class="badge-g">Independent</span> — one disk dying doesn't make another die</td><td><span class="badge-r">Correlated</span> — same bug exists on every node simultaneously</td></tr>
+          <tr><td><strong>Predictability</strong></td><td>Statistical — MTTF, failure rates, can be modeled</td><td>Latent — dormant until a specific trigger (a leap second, a malformed request)</td></tr>
+          <tr><td><strong>Primary defense</strong></td><td>Redundancy (RAID, replicas, dual power)</td><td>Testing, isolation, monitoring, careful design</td></tr>
+          <tr><td><strong>Difficulty</strong></td><td><span class="badge-g">Easier</span> — well-understood, redundancy works</td><td><span class="badge-r">Harder</span> — no silver bullet</td></tr>
+        </table>
+        <p>The key insight: redundancy is fantastic for hardware faults because failures are <em>independent</em>. Two disks rarely die in the same second for unrelated reasons. But redundancy does <strong>nothing</strong> for a software bug — if the bug is on node 1, it's on the identical replica node 2, ready to fire at the same instant on the same bad input.</p>
+      </section>
+
+      <!-- ANALOGY -->
+      <section class="section-card" id="analogy">
+        <div class="section-icon">✈️</div>
+        <h2 class="section-title">The Analogy: An Airliner vs a Recalled Car Model</h2>
+        <p><strong>Hardware faults are like an airplane engine failing.</strong> A modern jet has two (or four) engines, redundant hydraulics, and backup electrical systems. If one engine fails mid-flight, the plane flies on the others and lands safely. Engine failures are <em>independent</em> — one engine flaming out doesn't cause the other to flame out. Redundancy works beautifully here. This is exactly RAID, dual power supplies, and database replicas.</p>
+        <p><strong>Software errors are like a design flaw that triggers a recall.</strong> Imagine a car model where, due to a firmware bug, the brakes fail whenever the odometer hits exactly 100,000 km. Now imagine the manufacturer sold 2 million identical cars. Having a "backup car" of the same model doesn't help — it has the identical flaw and will fail at the identical trigger. The only fixes are: catch it in testing, isolate subsystems, and recall (patch) carefully.</p>
+        <table class="compare-table">
+          <tr><th>Analogy element</th><th>Maps to</th></tr>
+          <tr><td>Plane flies on remaining engines</td><td>Database serves reads from healthy replicas after one fails</td></tr>
+          <tr><td>Engine failures are independent</td><td>Disk failures are uncorrelated → redundancy works</td></tr>
+          <tr><td>Recalled flaw on all 2M cars</td><td>The same software bug deployed to all 2M instances</td></tr>
+          <tr><td>A backup car has the same flaw</td><td>A replica node runs the identical buggy code</td></tr>
+          <tr><td>The 100,000 km trigger</td><td>The latent trigger: a leap second, a specific payload, a full disk</td></tr>
+        </table>
+        <p style="margin-top:16px">This is why a billion-dollar company can have triple-redundant hardware and still suffer a global outage: the redundancy protects against engine failure, but the outage came from a recall-class software bug that every node shared.</p>
+      </section>
+
+      <!-- HOW IT WORKS -->
+      <section class="section-card" id="how-it-works">
+        <div class="section-icon">⚙️</div>
+        <h2 class="section-title">How It Actually Works</h2>
+        <p>Let's make the two failure modes concrete. First, watch hardware fault tolerance in action — a disk dies and the system keeps serving:</p>
+
+        <!-- ANIMATED ARCHITECTURE DIAGRAM -->
+        <div class="svg-container">
+          <svg viewBox="0 0 740 300" xmlns="http://www.w3.org/2000/svg">
+            <rect width="740" height="300" fill="#0d1117" rx="6"/>
+            <text x="370" y="22" text-anchor="middle" fill="#8b949e" font-size="10" font-family="sans-serif" font-weight="700" letter-spacing="1.5">HARDWARE FAULT TOLERANCE — ONE DISK DIES, SERVICE SURVIVES</text>
+
+            <!-- Load balancer -->
+            <rect x="40" y="125" width="100" height="50" rx="7" fill="#0f1a2e" stroke="#58a6ff" stroke-width="1.5" class="node-active"/>
+            <text x="90" y="146" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="sans-serif" font-weight="600">Load</text>
+            <text x="90" y="161" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="sans-serif" font-weight="600">Balancer</text>
+
+            <!-- Arrows to 3 replicas -->
+            <line x1="140" y1="150" x2="250" y2="80" class="flow-line"/>
+            <polygon points="245,78 256,76 252,87" fill="#58a6ff"/>
+            <line x1="140" y1="150" x2="250" y2="150" class="flow-line" style="animation-duration:2.1s"/>
+            <polygon points="250,145 260,150 250,155" fill="#58a6ff"/>
+            <line x1="140" y1="150" x2="250" y2="220" class="flow-line" style="animation-duration:2.4s"/>
+            <polygon points="245,222 256,224 252,213" fill="#58a6ff"/>
+
+            <!-- Replica 1 (healthy) -->
+            <rect x="260" y="55" width="120" height="50" rx="7" fill="#0d1a0e" stroke="#3fb950" stroke-width="1.5"/>
+            <text x="320" y="76" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="sans-serif" font-weight="600">Replica 1 💾</text>
+            <text x="320" y="92" text-anchor="middle" fill="#3fb950" font-size="9" font-family="sans-serif">HEALTHY · serving</text>
+
+            <!-- Replica 2 (FAILED) -->
+            <rect x="260" y="125" width="120" height="50" rx="7" fill="#1a0d0d" stroke="#f85149" stroke-width="1.5" class="disk-failed"/>
+            <text x="320" y="146" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="sans-serif" font-weight="600">Replica 2 💥</text>
+            <text x="320" y="162" text-anchor="middle" fill="#f85149" font-size="9" font-family="sans-serif">DISK FAILED · removed</text>
+
+            <!-- Replica 3 (healthy) -->
+            <rect x="260" y="195" width="120" height="50" rx="7" fill="#0d1a0e" stroke="#3fb950" stroke-width="1.5"/>
+            <text x="320" y="216" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="sans-serif" font-weight="600">Replica 3 💾</text>
+            <text x="320" y="232" text-anchor="middle" fill="#3fb950" font-size="9" font-family="sans-serif">HEALTHY · serving</text>
+
+            <!-- Re-replication arrow from R1 to a new node -->
+            <line x1="380" y1="80" x2="500" y2="150" class="flow-line-green" style="animation-duration:1.6s"/>
+            <line x1="380" y1="220" x2="500" y2="150" class="flow-line-green" style="animation-duration:1.6s"/>
+            <polygon points="498,145 509,150 498,155" fill="#3fb950"/>
+
+            <!-- New replica being rebuilt -->
+            <rect x="510" y="125" width="130" height="50" rx="7" fill="#161b22" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 3"/>
+            <text x="575" y="146" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="sans-serif" font-weight="600">New Replica 🔧</text>
+            <text x="575" y="162" text-anchor="middle" fill="#d29922" font-size="9" font-family="sans-serif">REBUILDING from peers</text>
+
+            <!-- Legend -->
+            <line x1="40" y1="278" x2="68" y2="278" stroke="#58a6ff" stroke-width="2" stroke-dasharray="8 4"/>
+            <text x="74" y="282" fill="#8b949e" font-size="9" font-family="sans-serif">Live traffic</text>
+            <line x1="180" y1="278" x2="208" y2="278" stroke="#3fb950" stroke-width="2" stroke-dasharray="8 4"/>
+            <text x="214" y="282" fill="#8b949e" font-size="9" font-family="sans-serif">Re-replication (self-heal)</text>
+          </svg>
+        </div>
+
+        <p>The load balancer detects Replica 2 is unresponsive, stops routing to it, and the surviving replicas keep serving. In the background, the system re-replicates the lost data onto a fresh node. <strong>A fault occurred; no failure occurred.</strong> Users never noticed.</p>
+
+        <!-- STEP-THROUGH -->
+        <p>Now the harder case. Step through how a single <strong>software bug</strong> defeats all that beautiful redundancy:</p>
+        <div class="step-container">
+          <div class="step-header">
+            <span class="step-title">💥 How a Correlated Software Fault Cascades</span>
+            <div class="step-controls">
+              <button class="step-btn" onclick="resetSteps()">↺ Reset</button>
+              <span class="step-indicator" id="stepIndicator">Step 1 / 5</span>
+              <button class="step-btn primary" id="nextBtn" onclick="nextStep()">Next Step →</button>
+            </div>
+          </div>
+          <div class="step-visual">
+            <div class="step-panel active" id="step-0">
+              <div class="step-row">
+                <div class="step-node solved">🖥️ Node 1 ✓</div>
+                <div class="step-node solved">🖥️ Node 2 ✓</div>
+                <div class="step-node solved">🖥️ Node 3 ✓</div>
+              </div>
+              <p style="font-size:13px;color:#8b949e;margin-bottom:0">Three identical replicas, all healthy. The same code is deployed to each. Redundancy looks bulletproof.</p>
+            </div>
+            <div class="step-panel" id="step-1">
+              <div class="step-row">
+                <div class="step-node highlight">🖥️ Node 1</div>
+                <div class="step-node highlight">🖥️ Node 2</div>
+                <div class="step-node highlight">🖥️ Node 3</div>
+              </div>
+              <div style="background:#1c2128;border-left:3px solid #d29922;border-radius:6px;padding:10px;font-size:13px;color:#d29922;margin-top:8px">⚠️ A latent bug ships to all three: "parse the date field assuming it's never empty." It's been dormant for months.</div>
+            </div>
+            <div class="step-panel" id="step-2">
+              <div class="step-row">
+                <div class="step-node problem">🖥️ Node 1 ✗</div>
+                <div class="step-node problem">🖥️ Node 2 ✗</div>
+                <div class="step-node problem">🖥️ Node 3 ✗</div>
+              </div>
+              <div style="background:#1a0d0d;border:1px solid #f85149;border-radius:6px;padding:10px;font-size:13px;color:#f85149;margin-top:8px">💥 A client sends a request with an empty date field. <strong>All three nodes</strong> hit the bug at the same instant and crash. Redundancy provided zero protection — the fault was correlated.</div>
+            </div>
+            <div class="step-panel" id="step-3">
+              <div class="step-row">
+                <div class="step-node problem">🖥️ Node 1 ↻</div>
+                <div class="step-node problem">🖥️ Node 2 ↻</div>
+                <div class="step-node problem">🖥️ Node 3 ↻</div>
+                <div class="step-arrow problem">→</div>
+                <div class="step-node problem">📨 Retry storm</div>
+              </div>
+              <div style="background:#1a0d0d;border:1px solid #f85149;border-radius:6px;padding:10px;font-size:13px;color:#f85149;margin-top:8px">💥 Nodes auto-restart, the client retries the same poisoned request, they crash again. A <strong>crash loop + retry storm</strong> — a cascading failure feeding itself.</div>
+            </div>
+            <div class="step-panel" id="step-4">
+              <div class="step-row">
+                <div class="step-node solved">🖥️ Node 1 ✓</div>
+                <div class="step-node solved">🖥️ Node 2 ✓</div>
+                <div class="step-node solved">🖥️ Node 3 ✓</div>
+                <div class="step-arrow">→</div>
+                <div class="step-node highlight">🛡️ Input validation</div>
+              </div>
+              <div style="background:#0d1a0e;border:1px solid #3fb950;border-radius:6px;padding:10px;font-size:13px;color:#3fb950;margin-top:8px">✅ The real fixes: validate input at the boundary, isolate processes so one bad request can't kill the node, add circuit breakers to stop retry storms, and measure/alert on crash rates. Note: <strong>none of these are "add more replicas."</strong></div>
+            </div>
+          </div>
+          <div class="step-desc" id="stepDesc"><strong>Step 1 — Healthy redundant fleet:</strong> Three identical nodes running identical code. For hardware faults this is ideal — but watch what a shared software bug does to it.</div>
+        </div>
+
+        <h3>The Hardware Fault Toolkit</h3>
+        <p>For the <em>independent</em> failures, the industry has decades of proven redundancy techniques:</p>
+        <div class="code-block"><span class="cmt"># Classic single-machine redundancy</span>
+RAID                  <span class="cmt"># disks mirror/parity → survive a disk death</span>
+Dual power supplies   <span class="cmt"># survive a PSU failure or one power feed</span>
+ECC RAM               <span class="cmt"># detect & correct single-bit memory errors</span>
+Hot-swappable parts   <span class="cmt"># replace a disk without powering down</span>
+
+<span class="cmt"># The modern shift: tolerate losing whole MACHINES</span>
+Replication           <span class="ok"># multiple copies across machines (Day 32)</span>
+Multi-AZ deployment   <span class="ok"># survive an entire datacenter/AZ outage</span>
+Rolling restarts      <span class="ok"># patch a node without downtime</span></div>
+        <p>There's been a strategic shift. Older systems leaned on hardware redundancy inside one big machine. Modern cloud systems assume <strong>whole machines will vanish</strong> and build software-level fault tolerance across many cheap commodity boxes — which has the bonus that you can do rolling upgrades and reboot nodes for maintenance with zero downtime.</p>
+      </section>
+
+      <!-- TRADE-OFFS -->
+      <section class="section-card" id="tradeoffs">
+        <div class="section-icon">⚖️</div>
+        <h2 class="section-title">Trade-off Explorer</h2>
+        <p>First, the headline interactive: drag the slider to see <strong>why hardware failure stops being a rare event and becomes a daily certainty</strong> as your fleet grows. (Assumes a per-disk annualized failure rate of ~3%, in line with public Backblaze data.)</p>
+
+        <div class="calc-box">
+          <div class="calc-slider-row">
+            <div class="calc-slider-label"><span>Number of disks in your fleet</span><strong id="diskCount">1,000</strong></div>
+            <input type="range" id="diskSlider" min="1" max="100000" value="1000" oninput="updateCalc()">
+          </div>
+          <div class="calc-results">
+            <div class="calc-result"><div class="calc-result-num" id="failPerYear">30</div><div class="calc-result-cap">Expected disk failures / year</div></div>
+            <div class="calc-result"><div class="calc-result-num" id="failPerWeek">0.6</div><div class="calc-result-cap">Failures / week</div></div>
+            <div class="calc-result"><div class="calc-result-num" id="failPerDay">0.08</div><div class="calc-result-cap">Failures / day</div></div>
+          </div>
+          <div class="calc-verdict" id="calcVerdict">At this scale, a disk failure is an occasional event — manual replacement is fine. Redundancy is a nice-to-have.</div>
+        </div>
+
+        <p>Once you've felt the scale problem, the real architectural decision is <em>how</em> you achieve fault tolerance. Compare three philosophies:</p>
+        <div class="tradeoff-container">
+          <div class="radar-wrap">
+            <svg id="radarSvg" viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto"><rect width="300" height="280" fill="#0d1117"/></svg>
+          </div>
+          <div>
+            <div class="preset-buttons">
+              <button class="preset-btn active" id="preset-0" onclick="selectPreset(0)"><div class="preset-name">🛡️ Hardware Redundancy</div><div class="preset-desc">RAID, dual PSU, ECC RAM. One beefy reliable machine.</div></button>
+              <button class="preset-btn" id="preset-1" onclick="selectPreset(1)"><div class="preset-name">🌐 Software Fault Tolerance</div><div class="preset-desc">Many cheap nodes, replication, assume machines vanish.</div></button>
+              <button class="preset-btn" id="preset-2" onclick="selectPreset(2)"><div class="preset-name">☁️ Cloud Managed</div><div class="preset-desc">RDS Multi-AZ, managed services. Let the provider handle it.</div></button>
+            </div>
+            <div class="radar-tooltip" id="radarTooltip"></div>
+          </div>
+        </div>
+        <table class="compare-table">
+          <tr><th>Approach</th><th>Hardware faults</th><th>Software faults</th><th>Cost</th><th>Best for</th></tr>
+          <tr><td>Hardware Redundancy</td><td><span class="badge-g">Excellent</span></td><td><span class="badge-r">No help</span></td><td><span class="badge-r">High $/box</span></td><td>Legacy / single-server DBs</td></tr>
+          <tr><td>Software Fault Tolerance</td><td><span class="badge-g">Excellent</span></td><td><span class="badge-y">Partial (isolation)</span></td><td><span class="badge-g">Cheap boxes</span></td><td>Cloud-scale distributed systems</td></tr>
+          <tr><td>Cloud Managed</td><td><span class="badge-g">Excellent</span></td><td><span class="badge-y">Partial</span></td><td><span class="badge-y">Premium, but less ops</span></td><td>Small teams, fast iteration</td></tr>
+        </table>
+        <p>Note the column that's never green: <strong>no infrastructure approach fully solves software faults.</strong> That's a process and design problem — testing, isolation, monitoring — not something you can buy.</p>
+      </section>
+
+      <!-- IN THE WILD -->
+      <section class="section-card" id="in-the-wild">
+        <div class="section-icon">🌍</div>
+        <h2 class="section-title">In the Wild</h2>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:#58a6ff;color:#58a6ff"></div>
+            <div class="timeline-year">GOOGLE — Commodity hardware doctrine</div>
+            <div class="timeline-content"><strong>Embrace failure instead of fighting it.</strong> Google famously built its infrastructure on cheap commodity servers rather than expensive "reliable" enterprise hardware. The bet: at their scale, machines <em>will</em> die constantly, so build software (GFS, Borg, Spanner) that tolerates whole-machine loss. Cheaper hardware that fails more often, plus rock-solid software fault tolerance, beat expensive hardware that fails less.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:#3fb950;color:#3fb950"></div>
+            <div class="timeline-year">NETFLIX — Chaos Monkey</div>
+            <div class="timeline-content"><strong>Cause faults on purpose, during the day.</strong> Chaos Monkey randomly terminates production instances during business hours. This deliberately raises the fault rate to drive the failure rate to zero — engineers are forced to build services that survive any single instance vanishing. A textbook application of "increase faults to reduce failures."</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:#f85149;color:#f85149"></div>
+            <div class="timeline-year">2012 LEAP SECOND — The correlated software bug</div>
+            <div class="timeline-content"><strong>One line of kernel code, global outage.</strong> When a leap second was added on June 30, 2012, a Linux kernel bug caused CPUs to spin at 100%. Reddit, LinkedIn, Mozilla, and many others went down <em>simultaneously</em> — not because their hardware failed, but because they all ran the same buggy code triggered by the same instant in time. The perfect illustration of a correlated software fault that no amount of replication could prevent.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:#d29922;color:#d29922"></div>
+            <div class="timeline-year">AWS S3 — 11 nines via redundancy</div>
+            <div class="timeline-content"><strong>99.999999999% durability.</strong> S3 achieves eleven nines of durability by storing each object redundantly across multiple devices and facilities, continuously verifying data integrity with checksums and self-healing from any detected corruption. This is hardware-fault tolerance taken to its logical extreme — and it works precisely because device failures are independent.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SDE2 LENS -->
+      <section class="section-card" id="sde2-lens">
+        <div class="section-icon">🔬</div>
+        <h2 class="section-title">The SDE 2 Lens — Why This Matters Right Now</h2>
+        <div class="sde2-card">
+          <p>This isn't abstract distributed-systems theory — it explains things you've already lived through:</p>
+          <ul style="margin-top:12px">
+            <li><strong>"We had three replicas, so why did the whole service go down?"</strong> — Because the outage was a <em>correlated software fault</em>, not an independent hardware one. Replicas only protect against independent failures. Your bug was on all three.</li>
+            <li><strong>"A single bad request took down the whole pod."</strong> — Classic missing isolation. One poisoned input shouldn't crash the process. Validate at the boundary; consider per-request sandboxing or graceful degradation.</li>
+            <li><strong>"Our retries made the outage worse."</strong> — A retry storm. When everything is already failing, naive retries amplify load. This is why you need exponential backoff, jitter, and circuit breakers — design topics that flow directly from this fault/failure distinction.</li>
+            <li><strong>"Why does the SRE team run game days?"</strong> — Same logic as Chaos Monkey. Practicing faults in a controlled setting means the real one isn't a surprise.</li>
+          </ul>
+          <p style="margin-top:12px;color:#8b949e;font-size:13px">The mental upgrade: when you design any feature, ask "is the failure I'm guarding against <em>independent</em> or <em>correlated</em>?" Redundancy answers the first. Only testing, isolation, and monitoring answer the second.</p>
+        </div>
+      </section>
+
+      <!-- SYSTEM DESIGN -->
+      <section class="section-card" id="system-design">
+        <div class="section-icon">🎯</div>
+        <h2 class="section-title">System Design Interview Playbook</h2>
+        <div class="interview-card">
+          <p><strong>When this comes up:</strong> The moment you sketch any multi-node architecture, a strong interviewer asks "what happens when this node/disk/datacenter fails?" Reliability is a guaranteed line of questioning.</p>
+          <p style="margin-top:12px"><strong>What to say:</strong></p>
+          <ul>
+            <li>"Let me separate <em>independent</em> hardware faults from <em>correlated</em> software faults — they need different defenses."</li>
+            <li>"For hardware: I'll replicate data across nodes and across availability zones, so losing a disk, a machine, or a whole AZ degrades capacity but not availability."</li>
+            <li>"For software: replication doesn't help, so I'll add input validation at the edge, process isolation, circuit breakers with backoff+jitter, and tight monitoring on error rates."</li>
+            <li>"I'd quantify it: with N machines at failure rate R, I expect N×R failures per year, so my system must treat node loss as routine, not exceptional."</li>
+          </ul>
+          <p style="margin-top:12px"><strong>The trade-off to articulate:</strong> "Hardware redundancy on one big box is simple but expensive and can't survive whole-machine loss; software fault tolerance over commodity nodes is cheaper and more robust but adds operational complexity. Given the scale, I'd choose [X]."</p>
+          <p style="margin-top:12px"><strong>Common candidate mistake:</strong> Answering "I'll add replicas" to <em>every</em> reliability question — including ones about bad deploys or poison inputs, where replicas are useless.</p>
+          <p style="margin-top:12px"><strong>⚡ Power move:</strong> Bring up the failure math unprompted: "At 10,000 disks even a great MTTF means roughly one failure per day, so self-healing re-replication has to be automatic — there's no human in the loop at that rate." That single sentence signals you've operated real systems.</p>
+        </div>
+      </section>
+
+      <!-- MISCONCEPTIONS -->
+      <section class="section-card" id="misconceptions">
+        <div class="section-icon">⚠️</div>
+        <h2 class="section-title">Common Misconceptions</h2>
+        <p style="margin-bottom:16px;color:#8b949e;font-size:14px">Click each card to flip it and reveal the truth.</p>
+        <div class="flip-cards-grid">
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front"><div class="flip-label">❌ Wrong Belief</div><div class="flip-text">"We have replicas, so we're fault-tolerant. We're covered."</div><div class="flip-hint">Click to flip →</div></div>
+              <div class="flip-back"><div class="flip-label">✅ Reality</div><div class="flip-text">Replicas only protect against <em>independent</em> faults. A software bug, bad config, or poison input hits every identical replica at once. Replication is necessary but nowhere near sufficient.</div></div>
+            </div>
+          </div>
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front"><div class="flip-label">❌ Wrong Belief</div><div class="flip-text">"Better, more expensive hardware is the path to reliability."</div><div class="flip-hint">Click to flip →</div></div>
+              <div class="flip-back"><div class="flip-label">✅ Reality</div><div class="flip-text">Google proved the opposite at scale: cheap commodity hardware + strong software fault tolerance beats premium hardware. You can't buy your way out of correlated faults, and at scale everything fails anyway.</div></div>
+            </div>
+          </div>
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front"><div class="flip-label">❌ Wrong Belief</div><div class="flip-text">"A fault and a failure are basically the same thing."</div><div class="flip-hint">Click to flip →</div></div>
+              <div class="flip-back"><div class="flip-label">✅ Reality</div><div class="flip-text">A fault is one component misbehaving; a failure is the whole system not delivering service. The entire goal of reliability engineering is to stop faults from <em>becoming</em> failures. Faults are inevitable; failures are a design choice.</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INTERACTIVE -->
+      <section class="section-card" id="interactive">
+        <div class="section-icon">🤔</div>
+        <h2 class="section-title">Pause and Think</h2>
+        <details>
+          <summary>Your service runs 3 identical replicas behind a load balancer. A deploy goes out at noon and within 60 seconds all three replicas are crash-looping. What category of fault is this, and what would actually have prevented it?</summary>
+          <div class="answer-body">
+            <p><strong>This is a correlated software fault</strong>, not a hardware fault. The dead giveaway is the timing and the totality: all three nodes failing within seconds of a deploy means they share a common cause — the new code or config — not three independent coincidences.</p>
+            <p><strong>What would NOT have prevented it:</strong> Adding a fourth or tenth replica. They'd all run the same broken deploy and crash too.</p>
+            <p><strong>What actually prevents it:</strong></p>
+            <ul>
+              <li><em>Staged/canary deploys:</em> roll the new version to 1 node (or 1% of traffic) first; if error rates spike, halt and roll back before it reaches the rest.</li>
+              <li><em>Automated rollback:</em> tie deploy health to metrics so a bad version auto-reverts.</li>
+              <li><em>Pre-prod testing:</em> the bug should ideally be caught before it ever ships.</li>
+              <li><em>Process isolation + graceful handling:</em> so a crash on one request doesn't take the whole process with it.</li>
+            </ul>
+            <p>The lesson: the defense for correlated faults is about your <em>deploy and test process</em>, which is exactly why this topic bleeds into maintainability and human-error reliability (Day 3).</p>
+          </div>
+        </details>
+        <details>
+          <summary>Netflix deliberately kills its own production servers with Chaos Monkey. From a pure "uptime" view this seems insane. Why is it good reliability engineering?</summary>
+          <div class="answer-body">
+            <p>It's the "increase faults to decrease failures" principle in action. The reasoning:</p>
+            <ul>
+              <li><strong>Faults are inevitable anyway.</strong> Instances <em>will</em> die in production — the only question is whether it happens at 3 AM during a traffic spike (worst case) or at 2 PM on a Tuesday while engineers watch (best case).</li>
+              <li><strong>Untested fault tolerance is fictional fault tolerance.</strong> A failover path that's never exercised is probably broken — stale configs, wrong DNS, a runbook nobody updated. Chaos Monkey continuously proves the recovery paths actually work.</li>
+              <li><strong>It changes incentives.</strong> If your code might be killed at any moment, you're forced to make every service stateless-or-replicated and resilient from day one, instead of bolting it on after the first outage.</li>
+            </ul>
+            <p>So the apparent madness is actually rigor: by making single-instance faults a constant, boring occurrence, Netflix ensures that no single fault can ever escalate into a user-visible failure.</p>
+          </div>
+        </details>
+
+        <h3>⚡ Quick Check</h3>
+        <div class="quiz-wrap" id="quiz1">
+          <div class="quiz-question">You run 5,000 disks, each with a ~2% annualized failure rate. Roughly how many disk failures should you plan for per year?</div>
+          <div class="quiz-options">
+            <button class="quiz-option" onclick="checkQuiz('quiz1', this, false)">A) About 2 — failures are rare</button>
+            <button class="quiz-option" onclick="checkQuiz('quiz1', this, true)">B) About 100 — roughly 2 every week</button>
+            <button class="quiz-option" onclick="checkQuiz('quiz1', this, false)">C) Zero, if the disks are good quality</button>
+            <button class="quiz-option" onclick="checkQuiz('quiz1', this, false)">D) Exactly 5,000 — all of them</button>
+          </div>
+          <div class="quiz-feedback" id="quiz1-feedback"></div>
+        </div>
+        <div class="quiz-wrap" id="quiz2">
+          <div class="quiz-question">Which of these is a CORRELATED fault that replication does NOT protect against?</div>
+          <div class="quiz-options">
+            <button class="quiz-option" onclick="checkQuiz('quiz2', this, false)">A) A single disk physically crashing</button>
+            <button class="quiz-option" onclick="checkQuiz('quiz2', this, false)">B) A power supply dying in one server</button>
+            <button class="quiz-option" onclick="checkQuiz('quiz2', this, true)">C) A bug that crashes on a specific malformed input</button>
+            <button class="quiz-option" onclick="checkQuiz('quiz2', this, false)">D) A network cable getting unplugged from one rack</button>
+          </div>
+          <div class="quiz-feedback" id="quiz2-feedback"></div>
+        </div>
+      </section>
+
+      <!-- CONNECTIONS -->
+      <section class="section-card" id="connections">
+        <div class="section-icon">🔗</div>
+        <h2 class="section-title">How It Connects</h2>
+        <p>Reliability is a thread that runs through the entire book. Today's hardware/software fault distinction is the foundation for almost every later chapter:</p>
+        <div class="connections-grid">
+          <a class="connection-card live" href="day-01.html">
+            <div class="connection-day">Day 1 — Available</div>
+            <div class="connection-topic">The Three Concerns</div>
+            <div class="connection-why">Reliability is the first of the three; today we cracked it open</div>
+          </a>
+          <div class="connection-card locked">
+            <div class="connection-day">Day 3 — Coming Soon</div>
+            <div class="connection-topic">Human Errors</div>
+            <div class="connection-why">The third fault category — and the most common cause of real outages</div>
+          </div>
+          <div class="connection-card locked">
+            <div class="connection-day">Day 32 — Coming Soon</div>
+            <div class="connection-topic">Leaders &amp; Followers</div>
+            <div class="connection-why">How replication actually achieves hardware-fault tolerance</div>
+          </div>
+          <div class="connection-card locked">
+            <div class="connection-day">Day 34 — Coming Soon</div>
+            <div class="connection-topic">Handling Node Outages</div>
+            <div class="connection-why">Failover and re-replication mechanics in depth</div>
+          </div>
+          <div class="connection-card locked">
+            <div class="connection-day">Day 61 — Coming Soon</div>
+            <div class="connection-topic">Faults &amp; Partial Failures</div>
+            <div class="connection-why">Why distributed faults are even nastier than single-node ones</div>
+          </div>
+          <div class="connection-card locked">
+            <div class="connection-day">Day 68 — Coming Soon</div>
+            <div class="connection-topic">Byzantine Faults</div>
+            <div class="connection-why">When components don't just fail — they lie</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAKEAWAYS -->
+      <section class="section-card" id="takeaways">
+        <div class="section-icon">✅</div>
+        <h2 class="section-title">Key Takeaways</h2>
+        <ul class="takeaway-list" id="takeawayList">
+          <li><div class="takeaway-num">1</div><div class="takeaway-text"><strong>Fault ≠ failure.</strong> A fault is one component deviating from spec; a failure is the whole system not delivering service. The job of reliability engineering is to stop faults from becoming failures.</div></li>
+          <li><div class="takeaway-num">2</div><div class="takeaway-text"><strong>At scale, hardware failure is the steady state.</strong> 10,000 disks with a great MTTF still means ~one failure per day. Self-healing must be automatic; there's no human in that loop.</div></li>
+          <li><div class="takeaway-num">3</div><div class="takeaway-text"><strong>Hardware faults are independent; software faults are correlated.</strong> Redundancy crushes the first and does nothing for the second — the same bug lives on every identical replica.</div></li>
+          <li><div class="takeaway-num">4</div><div class="takeaway-text"><strong>Software faults need process, not parts.</strong> Testing, input validation, isolation, circuit breakers, and monitoring — you cannot buy your way out with better hardware or more replicas.</div></li>
+          <li><div class="takeaway-num">5</div><div class="takeaway-text"><strong>Sometimes raise faults to lower failures.</strong> Chaos Monkey and game days deliberately trigger faults so recovery paths are proven and a real fault becomes a non-event.</div></li>
+        </ul>
+      </section>
+
+      <!-- PREVIEW -->
+      <section class="section-card" id="preview">
+        <div class="preview-card">
+          <div class="preview-label">🔭 Tomorrow — Day 3</div>
+          <div class="preview-text">We tackle the fault category that causes the <strong>majority</strong> of real-world outages — not disks, not bugs, but <strong>humans</strong>. Why blameless postmortems, good interfaces, and sandboxed environments matter more than you think, and how the best teams design systems that make the right thing the easy thing.</div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer style="border-top:1px solid #30363d;padding:24px;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+  <a href="day-01.html" style="color:#58a6ff;text-decoration:none;font-size:14px;padding:6px 16px;border:1px solid #30363d;border-radius:6px;background:#161b22">← Day 1</a>
+  <span style="color:#8b949e;font-size:13px">Day 2 of 109 — Chapter 1</span>
+  <a href="index.html" style="color:#58a6ff;text-decoration:none;font-size:14px;padding:6px 16px;border:1px solid #30363d;border-radius:6px;background:#161b22">🏠 Index</a>
+</footer>
+
+<!-- ══ JS ══ -->
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => { document.getElementById('progressFill').style.width = '1.83%'; }, 400);
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.section-card').forEach(c => obs.observe(c));
+
+  const tlObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { document.querySelectorAll('.timeline-item').forEach((it,i)=>setTimeout(()=>it.classList.add('visible'),i*130)); tlObs.disconnect(); } });
+  }, { threshold: 0.1 });
+  const tl = document.querySelector('.timeline'); if (tl) tlObs.observe(tl);
+
+  const taObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.querySelectorAll('li').forEach((li,i)=>setTimeout(()=>li.classList.add('visible'),i*120)); taObs.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  const taList = document.getElementById('takeawayList'); if (taList) taObs.observe(taList);
+
+  const secObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { document.querySelectorAll('.toc-link').forEach(l=>l.classList.remove('active')); const a=document.querySelector(`.toc-link[href="#${e.target.id}"]`); if(a)a.classList.add('active'); } });
+  }, { rootMargin: '-20% 0px -65% 0px' });
+  document.querySelectorAll('section[id]').forEach(s => secObs.observe(s));
+
+  drawRadar(0);
+  updateStepDesc(0);
+  updateCalc();
+  document.getElementById('radarTooltip').style.display = 'block';
+  document.getElementById('radarTooltip').textContent = presets[0].desc;
+});
+
+function toggleDropdown() { document.getElementById('chaptersDropdown').classList.toggle('open'); }
+document.addEventListener('click', e => { if (!e.target.closest('.nav-chapters')) document.getElementById('chaptersDropdown').classList.remove('open'); });
+
+// ── Step-through ──
+let currentStep = 0;
+const TOTAL_STEPS = 5;
+const stepDescs = [
+  '<strong>Step 1 — Healthy redundant fleet:</strong> Three identical nodes running identical code. For hardware faults this is ideal — but watch what a shared software bug does to it.',
+  '<strong>Step 2 — A latent bug ships everywhere:</strong> Because all nodes run the same deploy, the bug is now present on every single one. It sits dormant, waiting for a trigger. Redundancy gave you three copies of the bug.',
+  '<strong>Step 3 — The trigger fires simultaneously:</strong> One poison input reaches the nodes and they all crash at once. This is the defining property of a correlated fault — replication multiplied the failure instead of containing it.',
+  '<strong>Step 4 — Cascading failure:</strong> Auto-restart + client retries create a crash loop and retry storm. The system is now attacking itself. More capacity would just mean more things crashing.',
+  '<strong>Step 5 — The real fixes:</strong> Input validation at the boundary, process isolation, circuit breakers with backoff, and monitoring. Notice none of these are "add replicas" — software faults need process and design, not more hardware.'
+];
+const stepDescClass = ['solved-desc','warn-desc','problem-desc','problem-desc','solved-desc'];
+function nextStep() {
+  if (currentStep >= TOTAL_STEPS - 1) return;
+  document.getElementById(`step-${currentStep}`).classList.remove('active');
+  currentStep++;
+  document.getElementById(`step-${currentStep}`).classList.add('active');
+  updateStepDesc(currentStep);
+  document.getElementById('nextBtn').disabled = currentStep >= TOTAL_STEPS - 1;
+  document.getElementById('stepIndicator').textContent = `Step ${currentStep + 1} / ${TOTAL_STEPS}`;
+}
+function resetSteps() {
+  document.getElementById(`step-${currentStep}`).classList.remove('active');
+  currentStep = 0;
+  document.getElementById('step-0').classList.add('active');
+  updateStepDesc(0);
+  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('stepIndicator').textContent = `Step 1 / ${TOTAL_STEPS}`;
+}
+function updateStepDesc(i) {
+  const el = document.getElementById('stepDesc');
+  el.innerHTML = stepDescs[i];
+  el.className = 'step-desc ' + (stepDescClass[i] || '');
+}
+
+// ── Fleet failure calculator ──
+function updateCalc() {
+  const disks = parseInt(document.getElementById('diskSlider').value, 10);
+  const rate = 0.03; // 3% annualized failure rate
+  const perYear = disks * rate;
+  const perWeek = perYear / 52;
+  const perDay = perYear / 365;
+  document.getElementById('diskCount').textContent = disks.toLocaleString();
+  document.getElementById('failPerYear').textContent = perYear < 10 ? perYear.toFixed(1) : Math.round(perYear).toLocaleString();
+  document.getElementById('failPerWeek').textContent = perWeek < 10 ? perWeek.toFixed(1) : Math.round(perWeek).toLocaleString();
+  document.getElementById('failPerDay').textContent  = perDay  < 10 ? perDay.toFixed(2)  : Math.round(perDay).toLocaleString();
+
+  const verdict = document.getElementById('calcVerdict');
+  const dayNum = document.getElementById('failPerDay');
+  if (perDay >= 1) {
+    verdict.className = 'calc-verdict danger';
+    dayNum.className = 'calc-result-num danger';
+    verdict.innerHTML = `🚨 <strong>At least one disk fails every day.</strong> Manual replacement can't keep up — failure is now the steady state. You MUST have automatic detection, failover, and self-healing re-replication. There is no human in this loop.`;
+  } else if (perWeek >= 1) {
+    verdict.className = 'calc-verdict';
+    dayNum.className = 'calc-result-num';
+    verdict.innerHTML = `⚠️ <strong>Multiple failures per month.</strong> You're past the point of treating disk death as surprising. Redundancy and a tested replacement process are now mandatory, not optional.`;
+  } else {
+    verdict.className = 'calc-verdict';
+    dayNum.className = 'calc-result-num';
+    verdict.innerHTML = `At this scale, a disk failure is an occasional event — manual replacement is fine. Redundancy is a nice-to-have. <em>Drag toward 10,000+ to see what scale does.</em>`;
+  }
+}
+
+// ── Radar ──
+const presets = [
+  { name: 'Hardware Redundancy', values: [9, 1, 3, 8, 6, 4], color: '#58a6ff', desc: 'RAID + dual PSU + ECC on one strong machine. Superb against disk/PSU/RAM faults, but cannot survive losing the whole machine, is costly per box, and offers zero defense against software bugs.' },
+  { name: 'Software Fault Tolerance', values: [9, 5, 9, 4, 9, 9], color: '#3fb950', desc: 'Many cheap commodity nodes with replication. Survives whole-machine and even whole-datacenter loss, enables rolling upgrades, and scales cheaply — at the cost of real operational complexity.' },
+  { name: 'Cloud Managed', values: [9, 6, 6, 7, 4, 7], color: '#d29922', desc: 'Managed services (RDS Multi-AZ, etc.) hand fault tolerance to the provider. Excellent reliability with minimal ops effort, ideal for small teams — but premium cost and less control over internals.' }
+];
+let activePreset = 0;
+function selectPreset(idx) {
+  document.querySelectorAll('.preset-btn').forEach((b,i)=>b.classList.toggle('active', i===idx));
+  activePreset = idx; drawRadar(idx);
+  const tt = document.getElementById('radarTooltip'); tt.textContent = presets[idx].desc; tt.style.display = 'block';
+}
+function drawRadar(idx) {
+  const svg = document.getElementById('radarSvg');
+  svg.innerHTML = '<rect width="300" height="280" fill="#0d1117"/>';
+  const cx = 148, cy = 138, r = 102;
+  const labels = ['HW Fault\\nCoverage', 'Read Perf', 'Scalability', 'Simplicity', 'Cost\\nEfficiency', 'SW Fault\\nMitigation'];
+  const n = labels.length;
+  const p = presets[idx];
+  for (let g = 1; g <= 5; g++) {
+    const gr = r * g / 5;
+    const pts = labels.map((_, i) => { const a = (Math.PI*2*i/n) - Math.PI/2; return [cx+gr*Math.cos(a), cy+gr*Math.sin(a)].join(','); }).join(' ');
+    const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points', pts); poly.setAttribute('fill','none');
+    poly.setAttribute('stroke', g===5 ? '#30363d' : '#21262d'); poly.setAttribute('stroke-width','1');
+    svg.appendChild(poly);
+  }
+  labels.forEach((label, i) => {
+    const a = (Math.PI*2*i/n) - Math.PI/2;
+    const x2 = cx+r*Math.cos(a), y2 = cy+r*Math.sin(a);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',cx); line.setAttribute('y1',cy); line.setAttribute('x2',x2); line.setAttribute('y2',y2);
+    line.setAttribute('stroke','#21262d'); line.setAttribute('stroke-width','1'); svg.appendChild(line);
+    const lx = cx+(r+14)*Math.cos(a), ly = cy+(r+14)*Math.sin(a);
+    const lines = label.split('\\n');
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',lx); t.setAttribute('y', ly + 4 - (lines.length-1)*5); t.setAttribute('text-anchor','middle');
+    t.setAttribute('fill','#8b949e'); t.setAttribute('font-size','8.5'); t.setAttribute('font-family','sans-serif');
+    lines.forEach((ln,li)=>{ const ts=document.createElementNS('http://www.w3.org/2000/svg','tspan'); ts.setAttribute('x',lx); ts.setAttribute('dy', li===0?0:10); ts.textContent=ln; t.appendChild(ts); });
+    svg.appendChild(t);
+  });
+  const dpts = p.values.map((v,i)=>{ const a=(Math.PI*2*i/n)-Math.PI/2; const d=r*v/10; return [cx+d*Math.cos(a), cy+d*Math.sin(a)].join(','); }).join(' ');
+  const dpoly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+  dpoly.setAttribute('points', dpts); dpoly.setAttribute('fill', p.color+'28'); dpoly.setAttribute('stroke', p.color); dpoly.setAttribute('stroke-width','2'); svg.appendChild(dpoly);
+  p.values.forEach((v,i)=>{ const a=(Math.PI*2*i/n)-Math.PI/2; const d=r*v/10; const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',cx+d*Math.cos(a)); c.setAttribute('cy',cy+d*Math.sin(a)); c.setAttribute('r',3.5); c.setAttribute('fill',p.color); svg.appendChild(c); });
+  const tl = document.createElementNS('http://www.w3.org/2000/svg','text');
+  tl.setAttribute('x',cx); tl.setAttribute('y',270); tl.setAttribute('text-anchor','middle'); tl.setAttribute('fill',p.color); tl.setAttribute('font-size','10'); tl.setAttribute('font-family','sans-serif'); tl.setAttribute('font-weight','700'); tl.textContent = p.name; svg.appendChild(tl);
+}
+
+// ── Quiz ──
+function checkQuiz(id, btn, correct) {
+  const wrap = document.getElementById(id);
+  if (wrap.dataset.done) return;
+  wrap.dataset.done = '1';
+  wrap.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  const fb = document.getElementById(id + '-feedback');
+  fb.classList.add('show', correct ? 'correct' : 'wrong');
+  const msgs = {
+    quiz1: { y: '✅ Correct! 5,000 × 2% = 100 failures/year, roughly 2 per week. At scale, failure is routine — your system must self-heal automatically.', n: '❌ Not quite. Multiply fleet size by failure rate: 5,000 × 0.02 = 100 failures/year. That\'s the whole point — individually rare, collectively constant.' },
+    quiz2: { y: '✅ Correct! A bug triggered by malformed input exists identically on every replica and fires on all of them at once — replication offers no protection against correlated software faults.', n: '❌ Not quite. A, B, and D are all independent hardware faults that replication handles well. Only the input-triggered bug is correlated across every identical node.' }
+  };
+  fb.textContent = correct ? msgs[id].y : msgs[id].n;
+}
+</script>
+</body>
+</html>
