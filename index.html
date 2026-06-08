@@ -155,7 +155,7 @@ details[open] .ch-chevron { transform: rotate(90deg); }
 <nav class="navbar">
   <a class="nav-logo" href="index.html">📚 DDIA Daily</a>
   <div class="nav-right">
-    <a class="nav-link" href="day-02.html">Today: Day 2</a>
+    <a class="nav-link" href="day-03.html">Today: Day 3</a>
     <a class="nav-link" href="#search">🔍 Search</a>
   </div>
 </nav>
@@ -165,11 +165,11 @@ details[open] .ch-chevron { transform: rotate(90deg); }
   <h1 class="hero-title">📚 DDIA Mastery<br><span>SDE 2 → System Design Expert</span></h1>
   <p class="hero-sub">One deep, interactive lesson per day from the world's best book on data systems — built for engineers leveling up to senior and staff roles.</p>
   <div class="hero-progress">
-    <div class="hero-progress-meta"><span>Overall Progress</span><span>2 / 109 sessions complete</span></div>
+    <div class="hero-progress-meta"><span>Overall Progress</span><span>3 / 109 sessions complete</span></div>
     <div class="progress-track"><div class="progress-fill" id="heroPF"></div></div>
     <div class="hero-badges">
-      <span class="hero-badge green">✓ 2 Sessions Done</span>
-      <span class="hero-badge blue">107 Remaining</span>
+      <span class="hero-badge green">✓ 3 Sessions Done</span>
+      <span class="hero-badge blue">106 Remaining</span>
       <span class="hero-badge yellow">12 Chapters</span>
     </div>
   </div>
@@ -183,7 +183,7 @@ details[open] .ch-chevron { transform: rotate(90deg); }
 <div class="page-body">
   <aside class="jump-sidebar">
     <div class="jump-title">Jump to Chapter</div>
-    <a class="jump-link has-content" href="#ch1">Ch 1 — Foundations <span class="jump-count">2/6</span></a>
+    <a class="jump-link has-content" href="#ch1">Ch 1 — Foundations <span class="jump-count">3/6</span></a>
     <a class="jump-link" href="#ch2">Ch 2 — Data Models <span class="jump-count">0/8</span></a>
     <a class="jump-link" href="#ch3">Ch 3 — Storage <span class="jump-count">0/11</span></a>
     <a class="jump-link" href="#ch4">Ch 4 — Encoding <span class="jump-count">0/6</span></a>
@@ -211,16 +211,16 @@ details[open] .ch-chevron { transform: rotate(90deg); }
           </div>
         </div>
         <div class="ch-progress-right">
-          <span class="ch-fraction">2 / 6</span>
-          <div class="ch-mini-bar"><div class="ch-mini-fill" style="width:33.3%"></div></div>
+          <span class="ch-fraction">3 / 6</span>
+          <div class="ch-mini-bar"><div class="ch-mini-fill" style="width:50%"></div></div>
           <span class="ch-chevron">▶</span>
         </div>
       </summary>
-      <div class="stats-strip"><span><strong>2</strong> complete</span><span><strong>4</strong> upcoming</span><span>Days 1–6</span></div>
+      <div class="stats-strip"><span><strong>3</strong> complete</span><span><strong>3</strong> upcoming</span><span>Days 1–6</span></div>
       <div class="lessons-grid">
         <a class="lesson-card done" href="day-01.html"><div class="card-day">Day 1</div><div class="card-title">What Is a Data-Intensive Application? The Three Concerns</div></a>
         <a class="lesson-card done" href="day-02.html"><div class="card-day">Day 2</div><div class="card-title">Reliability: Hardware Faults &amp; Software Errors</div></a>
-        <div class="lesson-card locked"><div class="card-day">Day 3</div><div class="card-title">Reliability: Human Errors &amp; Importance of Reliability</div><div class="card-lock">🔒 Coming soon</div></div>
+        <a class="lesson-card done" href="day-03.html"><div class="card-day">Day 3</div><div class="card-title">Reliability: Human Errors &amp; Why Reliability Matters</div></a>
         <div class="lesson-card locked"><div class="card-day">Day 4</div><div class="card-title">Scalability: Describing Load and Performance</div><div class="card-lock">🔒 Coming soon</div></div>
         <div class="lesson-card locked"><div class="card-day">Day 5</div><div class="card-title">Scalability: Coping with Load</div><div class="card-lock">🔒 Coming soon</div></div>
         <div class="lesson-card locked"><div class="card-day">Day 6</div><div class="card-title">Maintainability: Operability, Simplicity, Evolvability</div><div class="card-lock">🔒 Coming soon</div></div>
@@ -449,7 +449,7 @@ details[open] .ch-chevron { transform: rotate(90deg); }
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => { document.getElementById('heroPF').style.width = '0.92%'; }, 400);
+  setTimeout(() => { document.getElementById('heroPF').style.width = '2.75%'; }, 400);
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
   }, { threshold: 0.05 });
@@ -468,7 +468,7 @@ window.addEventListener('DOMContentLoaded', () => {
 const allLessons = [
   { day:1,  title:"What Is a Data-Intensive Application? The Three Concerns", ch:"Ch 1", file:"day-01.html" },
   { day:2,  title:"Reliability: Hardware Faults & Software Errors",           ch:"Ch 1", file:"day-02.html" },
-  { day:3,  title:"Reliability: Human Errors & Importance of Reliability",    ch:"Ch 1", file:null },
+  { day:3,  title:"Reliability: Human Errors & Why Reliability Matters",       ch:"Ch 1", file:"day-03.html" },
   { day:4,  title:"Scalability: Describing Load and Performance",              ch:"Ch 1", file:null },
   { day:5,  title:"Scalability: Coping with Load",                            ch:"Ch 1", file:null },
   { day:6,  title:"Maintainability: Operability, Simplicity, Evolvability",   ch:"Ch 1", file:null },
