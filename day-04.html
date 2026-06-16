@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 4 — Scalability: Describing Load &amp; Performance | DDIA</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --border-soft: #21262d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --blue: #58a6ff;
+    --green: #3fb950;
+    --amber: #d29922;
+    --purple: #a371f7;
+    --red: #f85149;
+    --orange: #f0883e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  a { color: var(--blue); text-decoration: none; }
+
+  /* ── Navbar ── */
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 22px;
+  }
+  .navbar .logo { font-weight: 800; color: var(--blue); font-size: 1.05rem; }
+  .navbar .spacer { flex: 1; }
+  .dropdown { position: relative; }
+  .dropdown-btn {
+    background: #21262d;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .dropdown-btn:hover { border-color: var(--blue); }
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 44px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    min-width: 320px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.6);
+    padding: 6px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .dropdown-menu.open { display: block; }
+  .dropdown-menu a {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    color: var(--text);
+  }
+  .dropdown-menu a:hover { background: #21262d; color: var(--blue); }
+  .nav-search {
+    background: #21262d;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .nav-search:hover { border-color: var(--blue); }
+
+  /* ── Header ── */
+  .header { max-width: 1100px; margin: 0 auto; padding: 32px 22px 8px; }
+  .day-badge {
+    display: inline-block;
+    background: rgba(88,166,255,.12);
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 20px;
+    animation: glow 2.6s ease-in-out infinite;
+  }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 0 rgba(88,166,255,0); }
+    50% { box-shadow: 0 0 14px rgba(88,166,255,.45); }
+  }
+  h1.main-title {
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    color: var(--text);
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 14px 0 6px;
+  }
+  .chapter-label { color: var(--muted); font-size: .95rem; }
+
+  .progress-wrap { margin: 18px 0 6px; }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 13px; color: var(--muted); margin-bottom: 8px;
+  }
+  .progress-bar-track { background: var(--border-soft); border-radius: 4px; height: 8px; overflow: hidden; }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--green));
+    border-radius: 4px; width: 0; transition: width 1.2s ease;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 22px 80px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 28px;
+    align-items: start;
+  }
+  .main { min-width: 0; }
+
+  /* ── Sidebar ── */
+  .sidebar { position: sticky; top: 80px; }
+  .side-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  .side-card h4 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--muted); margin-bottom: 10px;
+  }
+  .toc a {
+    display: block;
+    padding: 5px 10px;
+    border-left: 2px solid transparent;
+    color: var(--muted);
+    font-size: 13.5px;
+    transition: all .15s;
+  }
+  .toc a:hover { color: var(--text); }
+  .toc a.active { color: var(--blue); border-left-color: var(--blue); background: rgba(88,166,255,.07); }
+  .pill {
+    display: inline-block;
+    background: rgba(63,185,80,.1);
+    border: 1px solid rgba(63,185,80,.4);
+    color: var(--green);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin: 3px 4px 3px 0;
+  }
+  .pill:hover { background: rgba(63,185,80,.2); }
+  .pill.locked {
+    background: #1a1e24; border-color: var(--border-soft);
+    color: #484f58; pointer-events: none;
+  }
+  .interview-note { font-size: 13.5px; color: #c9d1d9; }
+
+  /* ── Cards / Sections ── */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.4);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .card.visible { opacity: 1; transform: translateY(0); }
+  h2 {
+    font-size: 1.3rem; color: var(--blue);
+    margin-bottom: 16px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  h3 { font-size: 1.06rem; color: var(--text); margin: 22px 0 8px; }
+  p { margin-bottom: 14px; }
+  p:last-child { margin-bottom: 0; }
+  ul, ol { padding-left: 22px; margin-bottom: 14px; }
+  li { margin-bottom: 6px; }
+  strong { color: var(--text); }
+  em { color: #c9d1d9; }
+  code { background: #1c2128; border: 1px solid var(--border-soft); border-radius: 4px; padding: 1px 6px; font-family: 'SFMono-Regular', Consolas, Menlo, monospace; font-size: 13px; color: #c9d1d9; }
+
+  /* ── Code blocks ── */
+  .code-block {
+    background: var(--bg);
+    border-left: 4px solid var(--blue);
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    font-family: 'SFMono-Regular', Consolas, Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    overflow-x: auto;
+    margin: 16px 0;
+    color: #c9d1d9;
+    white-space: pre;
+    animation: borderpulse 3s ease-in-out infinite;
+  }
+  @keyframes borderpulse {
+    0%, 100% { border-left-color: var(--blue); }
+    50% { border-left-color: #1f6feb; }
+  }
+
+  /* ── Callout boxes ── */
+  .insight, .connection, .sde2, .sysdesign {
+    border-radius: 6px; padding: 16px 20px; margin: 18px 0;
+  }
+  .insight { background: #0d2137; border: 1px solid #1f4068; border-left: 4px solid var(--blue); }
+  .connection { background: #0c1f14; border: 1px solid #1a3f24; border-left: 4px solid var(--green); }
+  .sde2 { background: #1c2128; border: 1px solid #2a3138; border-left: 4px solid var(--green); }
+  .sysdesign { background: #1c1a0f; border: 1px solid #3a3413; border-left: 4px solid var(--amber); }
+  .box-label {
+    font-size: 12px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .insight .box-label { color: var(--blue); }
+  .connection .box-label { color: var(--green); }
+  .sde2 .box-label { color: var(--green); }
+  .sysdesign .box-label { color: var(--amber); }
+
+  /* ── Table ── */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: #1c2128; color: var(--blue); }
+  tr:nth-child(even) td { background: #11151c; }
+
+  /* ── SVG diagram wrapper ── */
+  .diagram {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+  }
+  .diagram svg { width: 100%; height: auto; display: block; }
+
+  /* node states */
+  .node-box { fill: var(--panel); stroke: var(--border); stroke-width: 1.5; }
+  .node-box.healthy { stroke: var(--green); }
+  .node-box.failed { stroke: var(--red); fill: #2d1414; }
+  .node-box.syncing { stroke: var(--amber); }
+  .node-box.hot { stroke: var(--orange); fill: #2a1a0c; }
+  .node-label { fill: var(--text); font-size: 13px; font-family: inherit; }
+  .node-sub { fill: var(--muted); font-size: 10px; font-family: inherit; }
+
+  .flow-path {
+    fill: none; stroke: var(--blue); stroke-width: 2.5;
+    stroke-dasharray: 8 8;
+    animation: dash 1s linear infinite;
+  }
+  .flow-path.write { stroke: var(--amber); }
+  .flow-path.read { stroke: var(--green); }
+  .flow-path.dead { stroke: var(--red); animation: none; opacity: .5; stroke-dasharray: 4 6; }
+  @keyframes dash { to { stroke-dashoffset: -16; } }
+
+  /* ── Step-through ── */
+  .stepper { margin: 18px 0; }
+  .step-controls { display: flex; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
+  .btn {
+    background: rgba(88,166,255,.12);
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    padding: 8px 16px; border-radius: 6px; cursor: pointer;
+    font-size: 14px; font-weight: 600; transition: background .2s;
+  }
+  .btn:hover { background: rgba(88,166,255,.25); }
+  .btn.ghost { background: transparent; border-color: var(--border); color: var(--muted); }
+  .btn.ghost:hover { border-color: var(--text); color: var(--text); }
+  .step-text {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 18px; min-height: 90px;
+  }
+  .step-num {
+    font-size: 12px; color: var(--amber); font-weight: 700;
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px;
+  }
+  .bar-cell { transition: all .3s; }
+  .bar-cell rect { transition: all .3s; }
+  .bar-cell.lit rect { fill: var(--blue); stroke: var(--blue); }
+  .bar-cell.p50 rect { fill: var(--green); stroke: var(--green); }
+  .bar-cell.p95 rect { fill: var(--amber); stroke: var(--amber); }
+  .bar-cell.p99 rect { fill: var(--red); stroke: var(--red); }
+  .marker-line { stroke-width: 2; stroke-dasharray: 4 3; opacity: 0; transition: opacity .3s; }
+  .marker-line.show { opacity: 1; }
+
+  /* ── Trade-off explorer ── */
+  .explorer {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px; margin: 18px 0;
+  }
+  .explorer .controls { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .toggle-btn {
+    background: #21262d; border: 1px solid var(--border); color: var(--muted);
+    padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13.5px; font-weight: 600;
+    transition: all .2s;
+  }
+  .toggle-btn.active { background: rgba(88,166,255,.15); border-color: var(--blue); color: var(--blue); }
+  .slider-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .slider-row label { font-size: 13.5px; color: var(--muted); min-width: 190px; }
+  input[type=range] { flex: 1; accent-color: var(--blue); }
+  .explorer-readout {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  .readout-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+  }
+  .readout-card.winner { border-color: var(--green); box-shadow: 0 0 10px rgba(63,185,80,.25); }
+  .readout-card h5 { font-size: 13px; color: var(--text); margin-bottom: 8px; }
+  .stat { font-size: 1.5rem; font-weight: 800; }
+  .stat.good { color: var(--green); }
+  .stat.bad { color: var(--red); }
+  .stat.warn { color: var(--amber); }
+  .stat-sub { font-size: 12px; color: var(--muted); }
+  .verdict {
+    margin-top: 14px; padding: 12px 16px; border-radius: 8px;
+    background: var(--panel); border: 1px solid var(--border); font-size: 13.5px;
+  }
+
+  /* ── Flip cards ── */
+  .flip-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 18px 0; }
+  .flip {
+    perspective: 1200px; height: 210px; cursor: pointer;
+  }
+  .flip-inner {
+    position: relative; width: 100%; height: 100%;
+    transition: transform .6s; transform-style: preserve-3d;
+  }
+  .flip.flipped .flip-inner { transform: rotateY(180deg); }
+  .flip-face {
+    position: absolute; inset: 0; backface-visibility: hidden;
+    border-radius: 10px; padding: 18px;
+    display: flex; flex-direction: column; justify-content: center;
+    border: 1px solid var(--border);
+  }
+  .flip-front { background: #2d1414; border-color: #5a2020; }
+  .flip-front .tag { color: var(--red); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+  .flip-front p { font-size: 15px; font-weight: 600; }
+  .flip-back { background: #0c1f14; border-color: #1a3f24; transform: rotateY(180deg); overflow-y: auto; }
+  .flip-back .tag { color: var(--green); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+  .flip-back p { font-size: 13px; }
+  .flip-hint { font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+  /* ── Timeline ── */
+  .timeline { position: relative; margin: 20px 0; padding-left: 28px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 8px; top: 0; bottom: 0;
+    width: 2px; background: var(--border);
+  }
+  .tl-item {
+    position: relative; margin-bottom: 18px;
+    opacity: 0; transform: translateX(-12px);
+    animation: tlIn .5s ease forwards;
+    cursor: pointer;
+  }
+  @keyframes tlIn { to { opacity: 1; transform: translateX(0); } }
+  .tl-item::before {
+    content: ''; position: absolute; left: -24px; top: 5px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--blue);
+  }
+  .tl-year { font-size: 12px; font-weight: 700; color: var(--blue); }
+  .tl-title { font-weight: 600; font-size: 14.5px; }
+  .tl-desc { font-size: 13.5px; color: var(--muted); display: none; margin-top: 4px; }
+  .tl-item.open .tl-desc { display: block; }
+  .tl-item .tl-title::after { content: ' ▾'; color: var(--muted); font-size: 11px; }
+  .tl-item.open .tl-title::after { content: ' ▴'; }
+
+  /* ── Think / Quiz ── */
+  details.think {
+    background: #1a1322; border: 1px solid #3d2f5e; border-left: 4px solid var(--purple);
+    border-radius: 6px; margin: 16px 0; overflow: hidden;
+  }
+  details.think summary {
+    padding: 14px 18px; cursor: pointer; font-weight: 600; color: var(--purple);
+    list-style: none; user-select: none;
+  }
+  details.think summary::-webkit-details-marker { display: none; }
+  details.think summary:hover { background: #21182e; }
+  details.think .think-body { padding: 16px 18px; color: #c9d1d9; border-top: 1px solid #3d2f5e; }
+
+  .quiz-card {
+    background: #111a22; border: 1px solid #1f3a54; border-left: 4px solid var(--orange);
+    border-radius: 6px; padding: 16px 20px; margin: 16px 0;
+  }
+  .quiz-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
+  .quiz-question { font-weight: 600; margin-bottom: 12px; }
+  .quiz-answer {
+    display: none; margin-top: 14px; padding: 12px 16px;
+    background: var(--bg); border-radius: 6px; color: #c9d1d9; border: 1px solid var(--border);
+  }
+
+  /* ── Takeaway concept cards ── */
+  .takeaway-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 18px 0; }
+  .takeaway {
+    background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--green);
+    border-radius: 8px; padding: 14px 18px;
+    opacity: 0; transform: translateY(16px); transition: opacity .5s ease, transform .5s ease;
+  }
+  .takeaway.visible { opacity: 1; transform: translateY(0); }
+  .takeaway b { color: var(--green); }
+
+  /* ── Tomorrow ── */
+  .tomorrow {
+    background: linear-gradient(135deg, #0d2137 0%, #0c1f14 100%);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 24px 28px; text-align: center; margin-top: 28px;
+  }
+  .tomorrow h2 { border-bottom: none; margin-bottom: 10px; }
+  .tomorrow p { color: var(--muted); }
+  .tomorrow strong { color: var(--green); }
+
+  /* ── Footer nav ── */
+  .footer-nav {
+    display: flex; justify-content: space-between; gap: 12px;
+    margin-top: 32px; flex-wrap: wrap;
+  }
+  .footer-nav a {
+    padding: 10px 18px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--panel); font-size: 14px;
+  }
+  .footer-nav a:hover { border-color: var(--blue); background: #21262d; }
+  .footer-nav a.disabled { color: #484f58; pointer-events: none; border-color: var(--border-soft); }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; order: -1; }
+  }
+  @media (max-width: 600px) {
+    .card { padding: 18px 16px; }
+    .explorer-readout { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ Navbar ══ -->
+<nav class="navbar">
+  <a class="logo" href="index.html">📚 DDIA</a>
+  <div class="spacer"></div>
+  <div class="dropdown">
+    <button class="dropdown-btn" onclick="toggleDropdown(event)">Chapters ▾</button>
+    <div class="dropdown-menu" id="chapMenu">
+      <a href="day-01.html">Ch 1 · Reliable, Scalable, Maintainable (Day 1)</a>
+      <a href="index.html#ch2">Ch 2 · Data Models &amp; Query Languages (Day 7)</a>
+      <a href="index.html#ch3">Ch 3 · Storage and Retrieval (Day 15)</a>
+      <a href="index.html#ch4">Ch 4 · Encoding and Evolution (Day 26)</a>
+      <a href="index.html#ch5">Ch 5 · Replication (Day 32)</a>
+      <a href="index.html#ch6">Ch 6 · Partitioning (Day 44)</a>
+      <a href="index.html#ch7">Ch 7 · Transactions (Day 50)</a>
+      <a href="index.html#ch8">Ch 8 · Distributed Systems Trouble (Day 61)</a>
+      <a href="index.html#ch9">Ch 9 · Consistency &amp; Consensus (Day 69)</a>
+      <a href="index.html#ch10">Ch 10 · Batch Processing (Day 80)</a>
+      <a href="index.html#ch11">Ch 11 · Stream Processing (Day 90)</a>
+      <a href="index.html#ch12">Ch 12 · Future of Data Systems (Day 100)</a>
+    </div>
+  </div>
+  <a class="nav-search" href="index.html#search">🔍</a>
+</nav>
+
+<!-- ══ Header ══ -->
+<header class="header">
+  <span class="day-badge">Day 4 of 109</span>
+  <h1 class="main-title">Scalability — When "It Works" Isn't Enough</h1>
+  <div class="chapter-label">Chapter 1 · Reliable, Scalable, Maintainable Applications · Describing Load &amp; Performance</div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Course progress</span><span>4 / 109 (3.7%)</span></div>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+  </div>
+</header>
+
+<!-- ══ Layout ══ -->
+<div class="layout">
+  <main class="main">
+
+    <!-- #hook -->
+    <section class="card" id="hook">
+      <h2>🌩️ The Problem: The Tweet That Took Twitter Down</h2>
+      <p>It's 2010. A Twitter engineer is staring at a graph that won't stop climbing. The product is simple: people post 140-character messages, and when you open the app you see a merged feed of everyone you follow. Easy, right? The first version did exactly what you'd write on a whiteboard — when you load your home timeline, run a query: <em>"give me all tweets from everyone I follow, sorted by time."</em></p>
+      <div class="code-block">SELECT tweets.*, users.* FROM tweets
+  JOIN users    ON tweets.sender_id  = users.id
+  JOIN follows  ON follows.followee_id = users.id
+  WHERE follows.follower_id = current_user;</div>
+      <p>It worked beautifully... on day one. But Twitter wasn't being hit by <em>one</em> kind of load. It was being hit by two, and they grew in <strong>different shapes</strong>. People posted ~4,600 tweets per second on average. But people <em>opened their timelines</em> ~300,000 times per second — sixty-five times more often. And every single one of those 300k requests fired that monster join across a firehose of tweets. The database melted. Adding servers barely helped. The "fail whale" became a meme.</p>
+      <div class="insight">
+        <div class="box-label">💡 Why this should grab you</div>
+        <p>Nothing here was <em>broken</em>. No bug, no crash, no human typo (that was <a href="day-03.html">yesterday</a>). The code was correct. It just <strong>didn't scale</strong> — it worked at 1,000 users and fell over at 100 million. Reliability asks <em>"does it work?"</em>. Scalability asks a sharper question: <strong>"when the load grows 10×, what's our plan?"</strong> And here's the kicker — you can't even <em>answer</em> that question until you can describe load and performance with real numbers. That's today's entire mission.</p>
+      </div>
+    </section>
+
+    <!-- #the-what -->
+    <section class="card" id="the-what">
+      <h2>📖 What Is It? Describing Load &amp; Performance</h2>
+      <p>Scalability is <strong>a system's ability to cope with increased load</strong>. But notice: "scalability" is not a one-dimensional label you stamp on a system. Saying <em>"X is scalable"</em> or <em>"Y doesn't scale"</em> is almost meaningless. The real question Kleppmann insists you ask is:</p>
+      <div class="insight">
+        <div class="box-label">💡 The two questions that define scalability</div>
+        <p><strong>1.</strong> "If the load grows in <em>this particular way</em>, what are our options for coping with it?"<br>
+        <strong>2.</strong> "If we add resources, how can we keep performance steady?"</p>
+      </div>
+      <p>You can't reason about either until you can put numbers on two things: <strong>load</strong> and <strong>performance</strong>. Today is about learning that vocabulary precisely — because vague words ("a lot of traffic", "it's slow sometimes") are how engineers fool themselves.</p>
+
+      <h3>Step 1 — Describe the load with <em>load parameters</em></h3>
+      <p>A <strong>load parameter</strong> is a number that captures what's stressing your system. The right parameter depends entirely on your architecture. Examples from the book:</p>
+      <ul>
+        <li>Requests per second to a web server (throughput of an online service)</li>
+        <li>Ratio of reads to writes in a database</li>
+        <li>Number of simultaneously active users in a chat room</li>
+        <li>Hit rate on a cache</li>
+        <li>For Twitter specifically: <strong>the distribution of followers per user</strong> — this turned out to be <em>the</em> load parameter that mattered most</li>
+      </ul>
+      <p>The skill is picking the parameter that actually drives your bottleneck. For Twitter the headline number (tweets/sec) was a red herring; the fan-out — how many timelines each tweet must reach — was the real beast.</p>
+
+      <h3>Step 2 — Describe performance: throughput vs response time</h3>
+      <p>Two different lenses, for two different kinds of systems:</p>
+      <table>
+        <tr><th>Metric</th><th>What it measures</th><th>Used for</th></tr>
+        <tr><td><strong>Throughput</strong></td><td>Records processed per second, or total time to run a job over a dataset</td><td>Batch systems (e.g. Hadoop, Day 80)</td></tr>
+        <tr><td><strong>Response time</strong></td><td>The time between a client sending a request and receiving the response — what the user actually feels</td><td>Online systems (web, APIs)</td></tr>
+      </table>
+      <div class="insight">
+        <div class="box-label">💡 Response time ≠ latency</div>
+        <p>People use these interchangeably; DDIA does not. <strong>Response time</strong> is what the <em>client</em> sees: service time + network delays + <strong>queueing delay</strong>. <strong>Latency</strong> is the duration a request is waiting to be handled — latent, awaiting service. The queueing part is huge and sneaky: a request can be <em>fast to process</em> but <em>slow to respond</em> simply because it sat in a queue behind a slow neighbor.</p>
+      </div>
+
+      <h3>Step 3 — The big idea: don't use the average. Use <em>percentiles</em>.</h3>
+      <p>Response time is not a single number — it's a <strong>distribution</strong>. Run the same request a thousand times and you'll get a thousand different answers, because of context switches, network hiccups, garbage collection pauses, a TCP retransmit, a page fault. So how do you summarize it?</p>
+      <p>The <strong>average (mean)</strong> is the wrong tool — it tells you nothing about how many users had a bad experience, and a single 10-second outlier drags it around. Instead, sort your response times and use <strong>percentiles</strong>:</p>
+      <ul>
+        <li><strong>p50 (median):</strong> half your requests are faster, half slower. The "typical" experience.</li>
+        <li><strong>p95 / p99 / p999:</strong> the <strong>tail</strong>. p99 = 99% of requests are faster than this; 1 in 100 is slower. These are your <em>worst</em> experiences — and often your <em>most valuable</em> customers, because the people with the most data (most friends, most orders, most history) are the ones whose requests are slowest.</li>
+      </ul>
+      <p>Amazon famously tracks p99.9 (the slowest 1 in 1,000) because those customers often have the most purchases. They've observed that a <strong>100ms increase in response time drops sales by ~1%</strong>. The tail isn't a rounding error — it's revenue.</p>
+    </section>
+
+    <!-- #analogy -->
+    <section class="card" id="analogy">
+      <h2>🧠 The Analogy: The Coffee Shop &amp; the Airport Security Line</h2>
+
+      <h3>Percentiles → the morning coffee queue</h3>
+      <p>Imagine you run a coffee shop and want to brag about speed. You could say "the <em>average</em> wait is 90 seconds." But that average hides everything. Most customers order a drip coffee and are out in 30 seconds (your p50). But every so often someone orders six custom oat-milk caramel macchiatos, and <em>everyone behind them</em> waits five minutes (your p99). If you only watch the average, you'll never see those furious customers at the back — yet they're the ones writing the one-star reviews.</p>
+      <p><strong>Mapping:</strong> each customer = a request; the drip-coffee crowd = your fast common case (p50); the six-macchiato order = a heavy request (a user with millions of followers); the people stuck behind them = <strong>head-of-line blocking</strong>; the one-star reviews = lost revenue from tail latency. The fix isn't a faster barista on average — it's making sure one giant order can't freeze the whole line.</p>
+
+      <h3>Tail latency amplification → the group flight</h3>
+      <p>You and seven friends are flying out together, and you've agreed: <em>nobody boards until everyone clears airport security</em>. Seven of you breeze through in 3 minutes. But one friend gets randomly pulled for extra screening and takes 20 minutes. How long until your group is ready? <strong>20 minutes.</strong> The group is only as fast as its slowest member.</p>
+      <p><strong>Mapping:</strong> your group's wait = one user-facing request that internally fans out to 8 backend services in parallel; each friend = one backend call; the random extra screening = a normal-but-occasional slow response. Even if each backend is slow only 1% of the time, with 8 parallel calls the chance that <em>at least one</em> is slow is ~8%. This is <strong>tail latency amplification</strong>: the more services a single request touches, the more often it hits <em>somebody's</em> tail — so the p99 of the whole request is far worse than the p99 of any single backend.</p>
+      <div class="insight">
+        <div class="box-label">💡 The aha</div>
+        <p>Both analogies smash the same illusion: <strong>averages lie, and the tail is where the pain lives.</strong> A system can have a great average and still make a meaningful slice of users miserable — and in a microservices world, the more pieces a request touches, the more the tail dominates the experience.</p>
+      </div>
+    </section>
+
+    <!-- #how-it-works -->
+    <section class="card" id="how-it-works">
+      <h2>⚙️ How It Actually Works</h2>
+      <p>Let's make this concrete with Twitter's actual fix, then drill into how percentiles are computed. Twitter's insight: don't do expensive work at <em>read</em> time (300k/s) when you can do cheaper work at <em>write</em> time (4.6k/s). This is <strong>fan-out on write</strong> — precompute every user's home timeline as a cache, so reading it is a single cheap lookup.</p>
+
+      <h3>Animated architecture: fan-out on write</h3>
+      <p>When a user posts a tweet, the system looks up all their followers and <em>pushes</em> the tweet into each follower's pre-computed timeline cache (amber = the write fanning out). Later, when a follower opens the app, the read (green) is a single cheap lookup — no join, no merge. We've moved the cost from the hot read path to the cooler write path.</p>
+      <div class="diagram">
+        <svg viewBox="0 0 760 320" role="img" aria-label="Twitter fan-out on write architecture">
+          <!-- poster -->
+          <g>
+            <rect class="node-box healthy" x="14" y="130" width="120" height="60" rx="8"/>
+            <text class="node-label" x="74" y="156" text-anchor="middle">👤 Poster</text>
+            <text class="node-sub" x="74" y="173" text-anchor="middle">posts a tweet</text>
+          </g>
+          <!-- fan-out service -->
+          <g>
+            <rect class="node-box syncing" x="190" y="130" width="130" height="60" rx="8"/>
+            <text class="node-label" x="255" y="152" text-anchor="middle">Fan-out</text>
+            <text class="node-sub" x="255" y="169" text-anchor="middle">lookup followers</text>
+            <text class="node-sub" x="255" y="182" text-anchor="middle">~4.6k writes/s</text>
+          </g>
+          <!-- follower caches -->
+          <g>
+            <rect class="node-box healthy" x="430" y="20" width="150" height="48" rx="8"/>
+            <text class="node-label" x="505" y="40" text-anchor="middle">Cache: follower A</text>
+            <text class="node-sub" x="505" y="56" text-anchor="middle">timeline ↑ tweet</text>
+          </g>
+          <g>
+            <rect class="node-box healthy" x="430" y="86" width="150" height="48" rx="8"/>
+            <text class="node-label" x="505" y="106" text-anchor="middle">Cache: follower B</text>
+            <text class="node-sub" x="505" y="122" text-anchor="middle">timeline ↑ tweet</text>
+          </g>
+          <g>
+            <rect class="node-box healthy" x="430" y="152" width="150" height="48" rx="8"/>
+            <text class="node-label" x="505" y="172" text-anchor="middle">Cache: follower C</text>
+            <text class="node-sub" x="505" y="188" text-anchor="middle">timeline ↑ tweet</text>
+          </g>
+          <g>
+            <rect class="node-box healthy" x="430" y="218" width="150" height="48" rx="8"/>
+            <text class="node-label" x="505" y="238" text-anchor="middle">Cache: follower D</text>
+            <text class="node-sub" x="505" y="254" text-anchor="middle">timeline ↑ tweet</text>
+          </g>
+          <!-- reader -->
+          <g>
+            <rect class="node-box healthy" x="630" y="152" width="116" height="48" rx="8"/>
+            <text class="node-label" x="688" y="172" text-anchor="middle">📱 Reader</text>
+            <text class="node-sub" x="688" y="188" text-anchor="middle">1 cheap read</text>
+          </g>
+          <!-- write paths -->
+          <path class="flow-path write" d="M134 160 H190"/>
+          <path class="flow-path write" d="M320 150 C375 110, 390 70, 430 50"/>
+          <path class="flow-path write" d="M320 156 C375 130, 390 118, 430 110"/>
+          <path class="flow-path write" d="M320 166 C375 178, 390 178, 430 176"/>
+          <path class="flow-path write" d="M320 172 C375 215, 390 235, 430 242"/>
+          <!-- read path -->
+          <path class="flow-path read" d="M630 176 H580"/>
+        </svg>
+      </div>
+      <p style="font-size:13.5px;color:var(--muted)">Amber = the write fanning out to every follower's cache (expensive, but only 4.6k/s). Green = the read, now a single lookup (cheap, and it happens 300k/s). The trade-off: a tweet by someone with 30M followers triggers 30M cache writes — the <strong>celebrity problem</strong>, which we'll explore in the trade-off explorer below.</p>
+
+      <h3>Step-through: how percentiles are actually computed</h3>
+      <p>Here are 20 response-time samples (in ms), already sorted. Step through to see how p50, p95, and p99 are picked — and why the tail looks so different from the median.</p>
+      <div class="stepper">
+        <div class="diagram">
+          <svg viewBox="0 0 760 180" role="img" aria-label="Sorted response time samples with percentile markers">
+            <g id="bars"></g>
+            <line id="mark50" class="marker-line" stroke="#3fb950" x1="0" y1="0" x2="0" y2="150"/>
+            <line id="mark95" class="marker-line" stroke="#d29922" x1="0" y1="0" x2="0" y2="150"/>
+            <line id="mark99" class="marker-line" stroke="#f85149" x1="0" y1="0" x2="0" y2="150"/>
+            <text x="10" y="170" fill="#8b949e" font-size="11">← faster requests · sorted · slower requests →</text>
+          </svg>
+        </div>
+        <div class="step-text" id="stepText">
+          <div class="step-num" id="stepNum">Step 1 of 5 · Collect &amp; sort</div>
+          <div id="stepBody">We gathered 20 response-time samples and sorted them ascending. Most cluster low (the common, fast case) but a few stragglers on the right are dramatically slower — that's the tail. Click "Next Step" to find the median.</div>
+        </div>
+        <div class="step-controls">
+          <button class="btn" onclick="nextStep()">Next Step →</button>
+          <button class="btn ghost" onclick="resetSteps()">↺ Reset</button>
+        </div>
+      </div>
+
+      <h3>The math of tail latency amplification</h3>
+      <p>This is the formula every staff engineer keeps in their back pocket. If a single backend serves p99 = "1% of calls are slow," and one user request fans out to <em>N</em> parallel backend calls (and waits for all of them), the probability the whole request hits at least one slow call is:</p>
+      <div class="code-block">P(request is slow)  =  1 − (P one call is fast)^N
+                    =  1 − (0.99)^N
+
+   N = 1   backend:   1 − 0.99^1   ≈   1.0%   ← p99 of one service
+   N = 10  backends:  1 − 0.99^10  ≈   9.6%
+   N = 100 backends:  1 − 0.99^100 ≈  63.4%   ← now MOST requests are slow!
+
+Lesson: the more services one request touches, the more the
+tail dominates. A "rare" 1% slowdown becomes the common case
+once you fan out wide. This is why p99 of the whole > p99 of the parts.</div>
+    </section>
+
+    <!-- #tradeoffs -->
+    <section class="card" id="tradeoffs">
+      <h2>⚖️ The Trade-offs</h2>
+      <p>Twitter's two designs sit at opposite ends of a spectrum, and the "right" answer flips depending on a single load parameter: <strong>how many followers users have</strong>. Fan-out on <em>write</em> precomputes timelines (cheap reads, expensive writes). Fan-out on <em>read</em> does the join at query time (cheap writes, expensive reads). Neither wins universally — and the real Twitter uses a <strong>hybrid</strong>.</p>
+
+      <h3>Interactive: fan-out on write vs read</h3>
+      <p>Drag the slider to set the average followers per user, and toggle the workload. Watch the total system work shift. Notice how a celebrity (huge follower count) breaks fan-out-on-write, while ordinary read-heavy traffic makes it a clear winner.</p>
+      <div class="explorer">
+        <div class="controls">
+          <button class="toggle-btn active" id="wlRead" onclick="setWorkload('read')">Read-heavy (65 reads : 1 write)</button>
+          <button class="toggle-btn" id="wlBalanced" onclick="setWorkload('balanced')">Balanced (5 : 1)</button>
+        </div>
+        <div class="slider-row">
+          <label>Avg followers per user: <strong id="folVal">1,000</strong></label>
+          <input type="range" id="folSlider" min="0" max="100" value="40" oninput="updateExplorer()">
+        </div>
+        <div class="explorer-readout">
+          <div class="readout-card" id="cardWrite">
+            <h5>📤 Fan-out on WRITE</h5>
+            <div class="stat" id="writeWork">—</div>
+            <div class="stat-sub" id="writeSub"></div>
+          </div>
+          <div class="readout-card" id="cardRead">
+            <h5>📥 Fan-out on READ</h5>
+            <div class="stat" id="readWork">—</div>
+            <div class="stat-sub" id="readSub"></div>
+          </div>
+        </div>
+        <div class="verdict" id="verdict">—</div>
+      </div>
+      <p style="font-size:13px;color:var(--muted)">Illustrative model of "units of work per second" (writes-amplified vs reads-amplified). The crossover point is exactly why Twitter went hybrid: precompute timelines for normal users (fan-out on write), but fetch celebrity tweets at read time and merge them in (fan-out on read). The right design depends on the load <em>distribution</em>, not a single average.</p>
+
+      <h3>Side-by-side: the two designs</h3>
+      <table>
+        <tr><th>Dimension</th><th>Fan-out on write (precompute)</th><th>Fan-out on read (query-time join)</th></tr>
+        <tr><td>Write cost</td><td>High — one write per follower</td><td>Low — single insert</td></tr>
+        <tr><td>Read cost</td><td>Low — single cache lookup</td><td>High — join across all followees</td></tr>
+        <tr><td>Best when</td><td>Read-heavy, modest follower counts</td><td>Write-heavy, or huge fan-out (celebrities)</td></tr>
+        <tr><td>Storage</td><td>More (denormalized per-user timelines)</td><td>Less (one copy of each tweet)</td></tr>
+        <tr><td>Failure mode</td><td>Celebrity posts → millions of writes (a "thundering herd")</td><td>Popular timelines → slow, heavy reads</td></tr>
+        <tr><td>Latency profile</td><td>Predictable fast reads</td><td>Spiky read tail under load</td></tr>
+      </table>
+      <div class="insight">
+        <div class="box-label">💡 The deeper lesson</div>
+        <p>This is the universal trade-off of <strong>precompute vs compute-on-demand</strong> — you'll meet it again in materialized views (Day 97), denormalization, caching, and CQRS. The question is always: <em>do I pay the cost when data changes, or when it's read?</em> The answer depends on your read/write ratio and the shape of your data.</p>
+      </div>
+    </section>
+
+    <!-- #in-the-wild -->
+    <section class="card" id="in-the-wild">
+      <h2>🏢 In the Wild</h2>
+      <h3>Twitter — the canonical hybrid fan-out</h3>
+      <p>Twitter (now X) uses fan-out on write for the vast majority of users, but maintains an exception list: accounts with millions of followers (celebrities) are <strong>not</strong> fanned out. When you load your timeline, the system reads your precomputed cache <em>and</em> separately fetches recent tweets from the handful of celebrities you follow, then merges them at read time. Best of both worlds, driven by the follower-count distribution being their key load parameter.</p>
+      <h3>Amazon — p99.9 and "every 100ms costs 1% of sales"</h3>
+      <p>Amazon optimizes for high percentiles (p99.9) rather than averages, precisely because their highest-value customers tend to have the most account activity — and therefore the slowest requests. They quantified that a 100ms latency increase reduced sales by about 1%, which is why tail latency is treated as a revenue metric, not an engineering vanity number.</p>
+      <h3>Google &amp; the "Tail at Scale"</h3>
+      <p>Google's famous paper <em>The Tail at Scale</em> formalized tail-latency amplification and the fixes: <strong>hedged requests</strong> (send the same request to two replicas, take whichever returns first, cancel the other) and <strong>tied requests</strong>. When a single search touches hundreds of leaf servers, you <em>will</em> hit someone's slow tail on nearly every query — so you design around it instead of pretending it's rare.</p>
+      <h3>Monitoring stacks — Prometheus, HdrHistogram, t-digest</h3>
+      <p>Computing percentiles correctly at scale is non-trivial — you can't store every sample. Libraries like <strong>HdrHistogram</strong> and the <strong>t-digest</strong> algorithm approximate percentiles cheaply with bounded memory, and they're built into tools like Prometheus, Datadog, and Envoy. Crucial rule they all respect: <em>you cannot average percentiles together</em> (more on that in the misconceptions).</p>
+      <h3>SLOs / SLAs — percentiles as contracts</h3>
+      <p>Service Level Objectives are written in percentiles, not averages: e.g. "p99 latency &lt; 200ms and 99.9% availability over 30 days." Cloud providers' SLAs (AWS, GCP) and every serious internal service define their reliability targets this way — the percentile vocabulary you learned today is literally the language of production contracts.</p>
+    </section>
+
+    <!-- #sde2-lens -->
+    <section class="card" id="sde2-lens">
+      <h2>🔍 The SDE 2 Lens</h2>
+      <div class="sde2">
+        <div class="box-label">Where this shows up in your day job</div>
+        <p>You've been swimming in this vocabulary without naming it. Once you see it, your dashboards and incident reviews will read completely differently.</p>
+      </div>
+      <ul>
+        <li><strong>That Grafana/Datadog dashboard showing "p95 latency."</strong> Now you know <em>why</em> it's p95 and not "avg latency" — the average hides the users having a bad time. When someone asks "is the service healthy?", the right answer cites a percentile and a time window, not a single mean.</li>
+        <li><strong>The alert that fired even though "average looks fine."</strong> Classic. Your p50 is flat but your p99 doubled — a subset of requests (the big customers, the cold cache, the GC pauses) got slow. Averages would never have caught it.</li>
+        <li><strong>Your microservice that calls 6 other services to render one response.</strong> That's tail-latency amplification in your own codebase. If each dependency is p99 = 50ms, your endpoint's p99 is <em>worse</em> than 50ms — and it gets worse with every dependency you add. This is the hidden cost of "just add another service call."</li>
+        <li><strong>The cache you added to speed up a hot read path.</strong> You instinctively did fan-out-on-write: precompute the answer so reads are cheap. Materialized views, denormalized tables, Redis caches — all the same move. Now you can articulate the trade-off (stale data, write amplification) instead of just "it's faster."</li>
+        <li><strong>"It's slow but I can't reproduce it."</strong> Tail latency. It's the 1-in-100 request — a queueing delay, a noisy neighbor, a lock contention spike. You reproduce it by load-testing and looking at the <em>distribution</em>, not by hitting it once and seeing a fast response.</li>
+      </ul>
+      <div class="insight">
+        <div class="box-label">💡 Ohhh, THAT'S why</div>
+        <p>...your SRE team rejects "average response time" in design docs and insists on "p99 under expected peak load." And why "add a read replica" is the reflexive fix for a read-heavy service but useless for a write-heavy one. You're not memorizing rules — you're reading the load parameters.</p>
+      </div>
+    </section>
+
+    <!-- #system-design -->
+    <section class="card" id="system-design">
+      <h2>🎯 System Design Interview Playbook</h2>
+      <div class="sysdesign">
+        <div class="box-label">When this comes up</div>
+        <p>Constantly — it's the backbone of <em>every</em> design interview. "Design Twitter / a news feed / Instagram" is the literal example. But the load-and-performance framing applies to "Design a URL shortener," "Design a rate limiter," "Design a notification system" — any question where the interviewer says <em>"now it has 100 million users."</em></p>
+      </div>
+      <h3>What to say (the checklist)</h3>
+      <ul>
+        <li><strong>Quantify the load first.</strong> "Let me estimate: ~X writes/sec, ~Y reads/sec, read:write ratio of Z, with this distribution of object sizes / follower counts." Naming load parameters up front is a senior signal.</li>
+        <li><strong>Identify the dominant load parameter.</strong> "The bottleneck here isn't total tweets — it's fan-out, driven by the follower distribution." Show you can find the <em>one number</em> that drives the architecture.</li>
+        <li><strong>Talk performance in percentiles.</strong> "I'd target p99 &lt; 200ms at peak load, not average — and I'd watch p999 for the heavy-hitter users." Never say "fast." Say a percentile and a target.</li>
+        <li><strong>Pick precompute vs on-demand deliberately.</strong> "Reads dominate 65:1, so I'll fan out on write and precompute timelines, with a hybrid exception for high-fan-out accounts."</li>
+        <li><strong>Name tail amplification when fanning out.</strong> "Since one request touches N services, I'll use timeouts, hedged requests, and limit fan-out depth to control the p99."</li>
+      </ul>
+      <h3>The trade-off to articulate</h3>
+      <p>"It's precompute-vs-compute-on-read. Fan-out on write makes reads cheap but writes expensive and storage larger; fan-out on read is the reverse. I'd choose based on the read/write ratio and the fan-out distribution, and go <strong>hybrid</strong> at the extremes — exactly how real Twitter handles celebrities."</p>
+      <div class="sysdesign">
+        <div class="box-label">⚠️ Common candidate mistake</div>
+        <p>Optimizing the <em>average</em> and ignoring the tail — or worse, never quantifying load at all and jumping straight to boxes. Also: forgetting that "add more servers" doesn't help a <em>correlated</em> hotspot like a celebrity post; that's a fan-out problem, not a capacity problem. And quoting a "p99" you got by <em>averaging</em> the p99s of two machines (mathematically meaningless).</p>
+      </div>
+      <div class="sysdesign">
+        <div class="box-label">⭐ Power move</div>
+        <p>Drop <strong>tail-latency amplification</strong> with the math: "Because this request fans out to ~20 services, even 1%-slow backends mean ~18% of requests hit a slow tail — so I'll add hedged requests and a fan-out budget." Then tie performance to money: "Per Amazon, +100ms ≈ −1% sales, so the tail is a revenue metric." Connecting percentiles → architecture → business impact is a staff-level signal almost nobody gives.</p>
+      </div>
+    </section>
+
+    <!-- #misconceptions -->
+    <section class="card" id="misconceptions">
+      <h2>🃏 Common Misconceptions <span style="font-size:13px;color:var(--muted)">(tap a card to flip)</span></h2>
+      <div class="flip-grid">
+        <div class="flip" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="tag">✗ Myth</div>
+              <p>"Average response time tells me how my system is performing."</p>
+              <div class="flip-hint">tap to reveal truth →</div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="tag">✓ Truth</div>
+              <p>The average (mean) hides the tail and gets dragged by outliers. It tells you nothing about how many users had a bad experience. Use the <em>median (p50)</em> for the typical case and <em>p95/p99/p999</em> for the tail. A great average can coexist with thousands of furious users.</p>
+            </div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="tag">✗ Myth</div>
+              <p>"A system is either 'scalable' or it isn't — it's a property you can label."</p>
+              <div class="flip-hint">tap to reveal truth →</div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="tag">✓ Truth</div>
+              <p>Scalability is meaningless as a one-word label. The real question is "if load grows <em>in this specific way</em>, what are our options?" An architecture that scales beautifully for reads may collapse under writes. Always tie scalability to a specific load parameter and growth pattern.</p>
+            </div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="tag">✗ Myth</div>
+              <p>"To get the p99 of my whole fleet, I average the p99 of each server."</p>
+              <div class="flip-hint">tap to reveal truth →</div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="tag">✓ Truth</div>
+              <p>You <em>cannot</em> average percentiles — it's mathematically wrong. To aggregate, you must combine the underlying histograms (e.g. HdrHistogram / t-digest) and recompute the percentile from the merged distribution. Averaging p99s produces a number that means nothing.</p>
+            </div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="tag">✗ Myth</div>
+              <p>"My backends are each fast (p99 = 50ms), so my endpoint that calls all of them is also ~50ms."</p>
+              <div class="flip-hint">tap to reveal truth →</div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="tag">✓ Truth</div>
+              <p>Tail-latency amplification: if you wait for N parallel calls, the chance of hitting <em>at least one</em> slow tail grows fast. With 20 backends at p99=50ms, ~18% of your requests are slow. The whole is far worse than its parts — design with timeouts and hedged requests.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- #interactive -->
+    <section class="card" id="interactive">
+      <h2>🧩 Interactive Zone</h2>
+
+      <h3>📜 A short history of "describing load" <span style="font-size:13px;color:var(--muted)">(tap each to expand)</span></h3>
+      <div class="timeline" id="timeline">
+        <div class="tl-item open" onclick="this.classList.toggle('open')">
+          <div class="tl-year">Pre-cloud era</div>
+          <div class="tl-title">Vertical scaling — "buy a bigger box"</div>
+          <div class="tl-desc">For decades the answer to load was a more powerful single machine (scaling up). Simple, but you hit a ceiling — and one box is a single point of failure. Still valid: many systems scale up surprisingly far before needing distribution.</div>
+        </div>
+        <div class="tl-item" onclick="this.classList.toggle('open')">
+          <div class="tl-year">2000s</div>
+          <div class="tl-title">Horizontal scaling &amp; the "shared-nothing" wave</div>
+          <div class="tl-desc">Web giants spread load across many commodity machines (scaling out). Cheaper and fault-tolerant, but introduces the distributed-systems problems we'll spend Chapters 5–9 on. The art became elastic scaling: adding machines automatically as load rises.</div>
+        </div>
+        <div class="tl-item" onclick="this.classList.toggle('open')">
+          <div class="tl-year">2010</div>
+          <div class="tl-title">Twitter's fan-out rethink</div>
+          <div class="tl-desc">Twitter moved from a read-time join (fan-out on read) to precomputed timelines (fan-out on write), then to a hybrid for celebrities. The lesson that made the textbook: the load parameter that mattered was the <em>distribution of followers</em>, not the tweet rate.</div>
+        </div>
+        <div class="tl-item" onclick="this.classList.toggle('open')">
+          <div class="tl-year">2013</div>
+          <div class="tl-title">Google's "The Tail at Scale"</div>
+          <div class="tl-desc">Dean &amp; Barroso formalized tail-latency amplification and the techniques to fight it (hedged/tied requests, request reissue). It cemented percentiles — not averages — as the language of large-scale performance.</div>
+        </div>
+      </div>
+
+      <details class="think">
+        <summary>🤔 Pause &amp; Think #1 — Why does optimizing the average response time often make the tail <em>worse</em>?</summary>
+        <div class="think-body">
+          <p>It feels like making the average better should help everyone. Why might it hurt your slowest users?</p>
+          <p><strong>Answer:</strong> Because the cheapest way to lower the average is to make your <em>already-fast</em> common-case requests slightly faster — there are millions of them, so the mean drops nicely. But the slow tail is caused by fundamentally different things: queueing behind heavy requests, GC pauses, cold caches, users with huge data sets, lock contention. None of those are touched by shaving microseconds off the fast path. Worse, some "average" optimizations actively harm the tail — e.g. batching requests together raises throughput (better average) but adds queueing delay that inflates p99. The senior move is to optimize the tail <em>specifically</em>: isolate heavy requests so they can't block light ones (no head-of-line blocking), set timeouts, use hedged requests, and shard hot keys. You manage the average and the tail as <em>separate</em> goals, because they have separate causes.</p>
+        </div>
+      </details>
+
+      <details class="think">
+        <summary>🤔 Pause &amp; Think #2 — Twitter's average is 4.6k tweets/sec. Why is that number almost useless for capacity planning?</summary>
+        <div class="think-body">
+          <p>If the average write rate is 4.6k/s, why can't you just provision for ~5k/s and call it done?</p>
+          <p><strong>Answer:</strong> Three reasons, all about <em>distribution</em>. (1) <strong>Peak vs average:</strong> the average smears across quiet 3 AM hours and live-event spikes. Twitter saw bursts to ~12k/s during big events; you must provision for the peak, not the mean — or you fall over exactly when you're most visible. (2) <strong>Fan-out amplification:</strong> 4.6k tweets/sec isn't 4.6k units of work — under fan-out-on-write, each tweet multiplies by the poster's follower count. A normal user's tweet might be 200 cache writes; a celebrity's is 30 <em>million</em>. The real write load is the tweet rate × the follower distribution. (3) <strong>The distribution's shape matters more than its center:</strong> a few accounts with astronomical follower counts dominate the tail of work. This is why Kleppmann says the key load parameter for Twitter is the <em>distribution of followers per user</em> — a single average throws away exactly the information that determines whether your architecture survives.</p>
+        </div>
+      </details>
+
+      <div class="quiz-card">
+        <div class="quiz-label">⚡ Quick Check #1</div>
+        <p class="quiz-question">Your service's average latency is 40ms and looks healthy on the dashboard, but the support queue is full of "the app is slow" complaints. What single metric change would most likely reveal the problem, and why?</p>
+        <button class="btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="quiz-answer">
+          <p>Switch from <strong>average to high percentiles (p95/p99/p999)</strong>. The average being 40ms is fully consistent with, say, p99 = 3,000ms — meaning 1 in 100 requests takes three seconds. Those are real users having a terrible time, but they're statistically invisible in the mean. Plot the latency <em>distribution</em> over time and you'll likely see a fat tail (often correlated with peak load, GC pauses, a slow dependency, or your biggest customers). Bonus: segment percentiles by customer/endpoint to find <em>who</em> is in the tail.</p>
+        </div>
+      </div>
+
+      <div class="quiz-card">
+        <div class="quiz-label">⚡ Quick Check #2</div>
+        <p class="quiz-question">A read-heavy news feed (50 reads per write) is slow on reads. A teammate says "let's fan out on read with a join." Another says "precompute the feed on write." Who's right, and what's the one case that breaks their answer?</p>
+        <button class="btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+        <div class="quiz-answer">
+          <p><strong>Precompute on write</strong> is right for a read-heavy workload: you do the expensive merge once per write (rare) instead of on every read (frequent), turning reads into cheap single lookups. The case that breaks it: a <strong>celebrity / very high fan-out author</strong>. One post by an account with millions of followers triggers millions of cache writes — a write storm. The production answer is a <strong>hybrid</strong>: precompute for normal authors, but exclude high-fan-out accounts and merge their posts in at read time. The right design depends on the <em>follower distribution</em>, not just the average read/write ratio.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- #connections -->
+    <section class="card" id="connections">
+      <h2>🔗 How It Connects</h2>
+      <div class="connection">
+        <div class="box-label">Looking back</div>
+        <p><a href="day-01.html">Day 1</a> named Scalability as the second of the three concerns. <a href="day-02.html">Day 2</a> and <a href="day-03.html">Day 3</a> covered Reliability (can it stay up?). Today pivots to <em>can it grow?</em> — and crucially, gives you the <strong>vocabulary</strong> (load parameters, throughput, response time, percentiles) you need before you can even discuss coping with load.</p>
+      </div>
+      <h3>The web of ideas this plants</h3>
+      <ul>
+        <li><strong>Day 5 (next):</strong> <strong>Coping with load</strong> — scaling up vs out, shared-nothing, elastic vs manual scaling. Today described the problem; tomorrow attacks it.</li>
+        <li><strong>Day 6:</strong> <strong>Maintainability</strong> — the third concern, completing Chapter 1.</li>
+        <li><strong>Partitioning (Chapter 6, Day 44+):</strong> the primary mechanism for scaling writes horizontally — and where the "celebrity / hot key" problem from today returns as <em>skewed workloads</em> (Day 46).</li>
+        <li><strong>Replication (Chapter 5, Day 32+):</strong> the primary mechanism for scaling <em>reads</em> — read replicas are fan-out's cousin, and they bring replication-lag trade-offs (Days 36–38).</li>
+        <li><strong>Materialized views &amp; stream processing (Day 97):</strong> fan-out-on-write generalized — precomputing read views from a stream of writes. CDC (Day 92) and event sourcing (Day 93) are the modern toolkit for exactly this.</li>
+        <li><strong>Distributed systems trouble (Chapter 8, Day 61+):</strong> tail latency's root causes — unbounded network delays (Day 62), process pauses, and clock issues — get a whole chapter.</li>
+      </ul>
+    </section>
+
+    <!-- #takeaways -->
+    <section class="card" id="takeaways">
+      <h2>✅ Key Takeaways</h2>
+      <div class="takeaway-grid">
+        <div class="takeaway"><b>"Scalable" is not a label — it's a question.</b> Always ask "if load grows in <em>this</em> specific way, what are our options?" Tie scalability to a concrete load parameter and growth pattern.</div>
+        <div class="takeaway"><b>Pick the load parameter that drives your bottleneck.</b> For Twitter it wasn't tweet rate — it was the distribution of followers per user. The headline number is often a red herring.</div>
+        <div class="takeaway"><b>Throughput for batch, response time for online.</b> And response time ≠ latency: response time is what the client feels, including queueing delay behind slow neighbors.</div>
+        <div class="takeaway"><b>Use percentiles, never the average.</b> p50 for the typical case, p95/p99/p999 for the tail. The tail is where your most valuable users live — and you can't average percentiles together.</div>
+        <div class="takeaway"><b>Fan-out is precompute vs compute-on-read.</b> Read-heavy → fan out on write (cheap reads). Huge fan-out (celebrities) → fan out on read. Real systems go hybrid. And beware tail-latency amplification when one request touches many services.</div>
+      </div>
+    </section>
+
+    <!-- #preview -->
+    <div class="tomorrow">
+      <h2>🔭 Tomorrow — Day 5</h2>
+      <p>We've learned to <em>describe</em> load and performance with real numbers. Tomorrow we learn to <strong>cope</strong> with it: scaling up vs scaling out, the magic and pain of "shared-nothing" architectures, and why there's no such thing as a one-size-fits-all scalable architecture — only an architecture tuned to <em>your</em> load parameters.</p>
+    </div>
+
+    <!-- footer nav -->
+    <div class="footer-nav">
+      <a href="day-03.html">← Day 3</a>
+      <a href="index.html">🏠 Index</a>
+      <a class="disabled" href="#">Day 5 →</a>
+    </div>
+
+  </main>
+
+  <!-- ══ Sidebar ══ -->
+  <aside class="sidebar">
+    <div class="side-card">
+      <h4>On this page</h4>
+      <nav class="toc" id="toc">
+        <a href="#hook">The Problem</a>
+        <a href="#the-what">What Is It?</a>
+        <a href="#analogy">The Analogy</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#tradeoffs">The Trade-offs</a>
+        <a href="#in-the-wild">In the Wild</a>
+        <a href="#sde2-lens">The SDE 2 Lens</a>
+        <a href="#system-design">Interview Playbook</a>
+        <a href="#misconceptions">Misconceptions</a>
+        <a href="#interactive">Interactive Zone</a>
+        <a href="#connections">Connections</a>
+        <a href="#takeaways">Takeaways</a>
+        <a href="#preview">Tomorrow</a>
+      </nav>
+    </div>
+    <div class="side-card">
+      <h4>🔗 Related Sessions</h4>
+      <a class="pill" href="day-01.html">Day 1 · Three Concerns</a>
+      <a class="pill" href="day-02.html">Day 2 · Hardware &amp; Software</a>
+      <a class="pill" href="day-03.html">Day 3 · Human Errors</a>
+      <span class="pill locked">Day 5 · Coping with Load 🔒</span>
+      <span class="pill locked">Day 44 · Partitioning 🔒</span>
+      <span class="pill locked">Day 97 · Materialized Views 🔒</span>
+    </div>
+    <div class="side-card">
+      <h4>🎯 Interview Relevance</h4>
+      <p class="interview-note">Critical. The backbone of every design interview. Master <strong>load parameters</strong>, <strong>percentiles (p99)</strong>, <strong>fan-out on write vs read</strong>, and <strong>tail-latency amplification</strong>.</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+  // ── Progress bar ──
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      document.getElementById('progressFill').style.width = (4/109*100) + '%';
+    }, 150);
+  });
+
+  // ── Chapter dropdown ──
+  function toggleDropdown(e) {
+    e.stopPropagation();
+    document.getElementById('chapMenu').classList.toggle('open');
+  }
+  document.addEventListener('click', function() {
+    document.getElementById('chapMenu').classList.remove('open');
+  });
+
+  // ── Quiz reveal ──
+  function toggleAnswer(btn) {
+    var ans = btn.nextElementSibling;
+    var open = ans.style.display === 'block';
+    ans.style.display = open ? 'none' : 'block';
+    btn.textContent = open ? 'Reveal Answer' : 'Hide Answer';
+  }
+
+  // ── Percentile step-through ──
+  // 20 sorted samples (ms). Most fast, a few tail stragglers.
+  var samples = [11,12,13,14,15,16,17,18,19,21,23,25,28,32,38,46,60,95,180,420];
+  var SVG_W = 760, PLOT_W = 740, PLOT_X = 10, BASE_Y = 150, MAX_H = 130;
+  var maxVal = Math.max.apply(null, samples);
+  var barW = PLOT_W / samples.length;
+  var barsGroup = document.getElementById('bars');
+  // build bars
+  samples.forEach(function(v, i) {
+    var h = Math.max(6, (v / maxVal) * MAX_H);
+    var x = PLOT_X + i * barW;
+    var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'bar-cell');
+    g.setAttribute('id', 'bar' + i);
+    var r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    r.setAttribute('x', x + 2);
+    r.setAttribute('y', BASE_Y - h);
+    r.setAttribute('width', barW - 4);
+    r.setAttribute('height', h);
+    r.setAttribute('rx', 2);
+    r.setAttribute('fill', '#21262d');
+    r.setAttribute('stroke', '#30363d');
+    g.appendChild(r);
+    barsGroup.appendChild(g);
+  });
+  // percentile index helper: nearest-rank
+  function pIndex(p) { return Math.ceil(p/100 * samples.length) - 1; }
+  var i50 = pIndex(50), i95 = pIndex(95), i99 = pIndex(99);
+  function markerX(i) { return PLOT_X + i * barW + barW/2; }
+
+  var pSteps = [
+    {
+      num: 'Step 1 of 5 · Collect & sort',
+      body: '20 response-time samples (ms), sorted ascending. Most cluster low (the fast common case); a few stragglers on the right are dramatically slower — that’s the tail. The slowest here is 420ms vs a median near 22ms.',
+      lit: [], mark: null
+    },
+    {
+      num: 'Step 2 of 5 · Median (p50 = ' + samples[i50] + 'ms)',
+      body: 'The median is the middle value: half of requests are faster, half slower. Here p50 ≈ ' + samples[i50] + 'ms — the "typical" user experience. Notice how low and calm it is. If you only reported this, you’d think everything is great.',
+      lit: [i50], cls: 'p50', mark: { id: 'mark50', i: i50 }
+    },
+    {
+      num: 'Step 3 of 5 · p95 = ' + samples[i95] + 'ms',
+      body: 'p95: 95% of requests are faster than this; 1 in 20 is slower. Now we’re at ' + samples[i95] + 'ms — several times the median. This is where the tail starts to bite, and it’s the experience of a meaningful slice of your users.',
+      lit: [i50, i95], cls: 'p95', mark: { id: 'mark95', i: i95 }
+    },
+    {
+      num: 'Step 4 of 5 · p99 = ' + samples[i99] + 'ms',
+      body: 'p99: the slowest 1 in 100. Here it’s ' + samples[i99] + 'ms — roughly ' + Math.round(samples[i99]/samples[i50]) + '× the median! These are often your heaviest, most valuable users (most data = slowest requests). Averages would have completely hidden this.',
+      lit: [i50, i95, i99], cls: 'p99', mark: { id: 'mark99', i: i99 }
+    },
+    {
+      num: 'Step 5 of 5 · Why the average lies',
+      body: 'The mean of these samples is ≈' + Math.round(samples.reduce(function(a,b){return a+b;},0)/samples.length) + 'ms — dragged upward by the 420ms outlier yet still far below p99. No single average captures both the calm middle and the painful tail. That’s why production runs on percentiles, not means.',
+      lit: [i50, i95, i99], showAll: true, mark: 'all'
+    }
+  ];
+  var pCur = 0;
+  function clearBars() {
+    samples.forEach(function(_, i) {
+      var el = document.getElementById('bar' + i);
+      el.classList.remove('lit','p50','p95','p99');
+    });
+    ['mark50','mark95','mark99'].forEach(function(id){ document.getElementById(id).classList.remove('show'); });
+  }
+  function renderPStep() {
+    var s = pSteps[pCur];
+    document.getElementById('stepNum').textContent = s.num;
+    document.getElementById('stepBody').textContent = s.body;
+    clearBars();
+    // light up bars up to each named percentile
+    if (s.lit) {
+      // color the specific percentile bars; lit-but-not-percentile shown blue up to p99
+      var maxLit = Math.max.apply(null, s.lit);
+      for (var i = 0; i <= maxLit; i++) {
+        document.getElementById('bar' + i).classList.add('lit');
+      }
+      if (s.lit.indexOf(i50) >= 0) document.getElementById('bar' + i50).classList.add('p50');
+      if (s.lit.indexOf(i95) >= 0) document.getElementById('bar' + i95).classList.add('p95');
+      if (s.lit.indexOf(i99) >= 0) document.getElementById('bar' + i99).classList.add('p99');
+    }
+    // markers
+    function showMark(id, i) {
+      var m = document.getElementById(id);
+      m.setAttribute('x1', markerX(i)); m.setAttribute('x2', markerX(i));
+      m.setAttribute('y1', 8); m.setAttribute('y2', BASE_Y);
+      m.classList.add('show');
+    }
+    if (s.mark === 'all') {
+      showMark('mark50', i50); showMark('mark95', i95); showMark('mark99', i99);
+    } else if (s.mark) {
+      showMark(s.mark.id, s.mark.i);
+    }
+  }
+  function nextStep() { pCur = (pCur + 1) % pSteps.length; renderPStep(); }
+  function resetSteps() { pCur = 0; renderPStep(); }
+  renderPStep();
+
+  // ── Trade-off explorer: fan-out on write vs read ──
+  var workload = 'read'; // reads per write
+  function setWorkload(w) {
+    workload = w;
+    document.getElementById('wlRead').classList.toggle('active', w === 'read');
+    document.getElementById('wlBalanced').classList.toggle('active', w === 'balanced');
+    updateExplorer();
+  }
+  function fmt(n) {
+    if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+    if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+    return Math.round(n).toString();
+  }
+  function updateExplorer() {
+    // map slider 0..100 to followers 10 .. 30,000,000 (log scale)
+    var t = parseInt(document.getElementById('folSlider').value, 10) / 100;
+    var followers = Math.round(Math.pow(10, 1 + t * 6.477)); // 10^1 .. 10^7.477 (~30M)
+    document.getElementById('folVal').textContent = followers.toLocaleString();
+
+    var readsPerWrite = (workload === 'read') ? 65 : 5;
+    // Normalize to "work units per 1 write event"
+    // Fan-out on WRITE: each write costs `followers` cache-writes; each read costs 1.
+    var writeDesign = followers * 1 + 1 * readsPerWrite;
+    // Fan-out on READ: each write costs 1; each read costs `followers` (merge across followees ~ proportional).
+    var readDesign  = 1 * 1 + readsPerWrite * followers;
+
+    document.getElementById('writeWork').textContent = fmt(writeDesign);
+    document.getElementById('readWork').textContent  = fmt(readDesign);
+    document.getElementById('writeWork').className = 'stat';
+    document.getElementById('readWork').className = 'stat';
+
+    var writeWins = writeDesign < readDesign;
+    document.getElementById('writeWork').classList.add(writeWins ? 'good' : 'bad');
+    document.getElementById('readWork').classList.add(writeWins ? 'bad' : 'good');
+    document.getElementById('cardWrite').classList.toggle('winner', writeWins);
+    document.getElementById('cardRead').classList.toggle('winner', !writeWins);
+
+    document.getElementById('writeSub').textContent = fmt(followers) + ' cache-writes per post · 1 lookup per read';
+    document.getElementById('readSub').textContent  = '1 insert per post · ' + fmt(followers) + '-way merge per read';
+
+    var v = document.getElementById('verdict');
+    if (followers > 1000000) {
+      v.innerHTML = '<strong style="color:var(--red)">Celebrity zone.</strong> With ' + followers.toLocaleString() + ' followers, fan-out on <em>write</em> means a single post triggers ' + fmt(followers) + ' writes — a write storm. This is exactly why Twitter <strong>excludes celebrities</strong> from fan-out and merges their tweets at read time. Hybrid wins.';
+    } else if (writeWins) {
+      v.innerHTML = '<strong style="color:var(--green)">Fan-out on write wins.</strong> Reads are ' + readsPerWrite + '× more frequent than writes and the follower count is modest, so precomputing each timeline (cheap reads) beats joining on every read. This is the right call for the vast majority of normal users.';
+    } else {
+      v.innerHTML = '<strong style="color:var(--amber)">Fan-out on read wins.</strong> Here the write amplification from fan-out (' + fmt(followers) + ' writes/post) outweighs the savings on reads. Better to keep one copy of each tweet and merge at read time.';
+    }
+  }
+  updateExplorer();
+
+  // ── Scroll fade-in for cards & takeaways ──
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.card, .takeaway').forEach(function(el){ io.observe(el); });
+
+  // ── Sidebar active-section highlight ──
+  var tocLinks = Array.from(document.querySelectorAll('.toc a'));
+  var sections = tocLinks.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  var spy = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        var id = '#' + e.target.id;
+        tocLinks.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === id); });
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  sections.forEach(function(s){ if (s) spy.observe(s); });
+</script>
+</body>
+</html>
